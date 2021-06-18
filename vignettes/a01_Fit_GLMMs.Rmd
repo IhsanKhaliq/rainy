@@ -1,0 +1,173 @@
+---
+title: "Fit GLMMs"
+date: "29/04/2021"
+output:
+   rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Fit GLMMs}
+  %\VignetteEngine{knitr::rmarkdown_notangle}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, error = TRUE)
+knitr::opts_chunk$set(progress = TRUE, verbose = TRUE)
+knitr::opts_chunk$set(
+  echo = TRUE,
+  fig.width = 7,
+  fig.height = 7,
+  fig.align = "center"
+)
+```
+
+Load libraries
+
+```{r libraries, message=FALSE, echo=TRUE, warning=FALSE}
+library("readxl")
+library("tidyverse")
+library("dplyr")
+library("SDMTools")
+library("glmmTMB")
+library("DHARMa")
+library("ggeffects")
+library("here")
+library("gridExtra")
+```
+
+### Import data
+
+```{r import-data}
+dat <-
+  read_excel(system.file(
+    "extdata",
+    "lesion_weather_data.xlsx",
+    package = "rainy"),
+    sheet = 1,
+    na = "NA"
+  ) %>%
+  group_by(rainfall_event) %>%
+  mutate(wind_direction=circular.averaging(wind_direction)) %>%
+  mutate(rainfall_event = as.factor(rainfall_event)) %>%
+  mutate(total_lesions = as.integer(total_lesions)) 
+```
+
+Use `set.seed()` for reproducibility purposes
+
+```{r set-seed, echo=TRUE}
+set.seed(42)
+```
+
+### Model_1 (All variables)
+
+Include all variables with rainfall event as a random effect
+
+```{r fit-mod2}
+mod1 <-
+  glmmTMB(
+    total_lesions ~  total_rain + rain_duration + relative_humidity + temp + wind_speed + wind_direction + (1|rainfall_event), family = nbinom1,
+    data = dat
+  )
+
+summary(mod1)
+```
+The model summary suggest that there are not enough degrees of freedom to fit a complicated model. We can drop relative humidity and temperature because we directly transferred plants to a controlled environment with 20 degree celcius temperature and 100 % RH
+
+### Model_2
+
+Drop relative humidity and temperature 
+```{r}
+mod2 <-
+  glmmTMB(
+    total_lesions ~  total_rain + rain_duration +  wind_speed + wind_direction + (1|rainfall_event), family = nbinom1,
+    data = dat
+  )
+
+summary(mod2)
+```
+
+We can see that model has been successful converged. But getting a warning message
+
+### Model_3
+
+Remove wind speed as it is not significant 
+
+```{r fit-mod-3}
+mod3 <-
+  glmmTMB(
+    total_lesions ~  total_rain + rain_duration  + wind_direction + (1|rainfall_event), family = nbinom1,
+    data = dat
+  )
+
+summary(mod3)
+```
+Again getting a warning message. And the negative impact of increasing rain duration and wind direction does not make any biological sense 
+
+### Model_4
+
+Replace wind direction with wind speed if the warning message could be removed
+
+```{r fit-mod4}
+mod4 <-
+  glmmTMB(
+    total_lesions ~  total_rain + rain_duration  + wind_speed + (1|rainfall_event), family = nbinom1,
+    data = dat
+  )
+
+summary(mod4)
+```
+
+The warning message has gone now. The reason is that wind direction did not vary much during different rainfall events, whereas wind speed varied. We can go with `mod4`
+
+## Best fit model `mod4` diagnostics
+
+### Check over-dispersion
+
+Check for over-dispersion using custom function created by Ben Bolker. Here is the  [link](http://bbolker.github.io/mixedmodels-misc/glmmFAQ.html#overdispersion)
+
+```{r check-over-dispersion}
+overdisp_fun <- function(model) {
+    rdf <- df.residual(model)
+    rp <- residuals(model,type="pearson")
+    Pearson.chisq <- sum(rp^2)
+    prat <- Pearson.chisq/rdf
+    pval <- pchisq(Pearson.chisq, df=rdf, lower.tail=FALSE)
+    c(chisq=Pearson.chisq,ratio=prat,rdf=rdf,p=pval)
+}
+overdisp_fun(mod4)
+```
+The larger `p value` shows that there is no significant over-dispersion 
+
+### Simulate residuals
+
+
+```{r simulate-residuals}
+simulateResiduals(mod4, plot = T, quantreg=T)
+```
+
+Very close observed and predicted values 
+
+## Plot best fit model
+
+```{r}
+f1 <- plot(ggpredict(mod4, "total_rain"))
+f2 <- plot(ggpredict(mod4 , "rain_duration"))
+f3 <- plot(ggpredict(mod4, "wind_speed"))
+fig_5 <- grid.arrange(f1, f2, f3)
+
+
+```
+
+
+```{r}
+ggsave(
+   here("man", "figures/fig_5.png"),
+   plot = fig_5,
+   width = 9,
+   height = 9,
+   units = "in",
+   dpi = 600
+)
+```
+
+
+

@@ -1,0 +1,192 @@
+---
+title: "Data visualisation"
+date: "28/04/2021"
+rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Fit GLMMs}
+  %\VignetteEngine{knitr::rmarkdown_notangle}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_chunk$set(echo = TRUE, error = TRUE)
+knitr::opts_chunk$set(progress = TRUE, verbose = TRUE)
+knitr::opts_chunk$set(
+  echo = TRUE,
+  fig.width = 9,
+  fig.height = 9,
+  fig.align = "center"
+)
+```
+
+```{r message=FALSE, echo=TRUE, warning=FALSE}
+library("readxl")
+library("ggplot2")
+library("grDevices")
+library("dplyr")
+library("lubridate")
+library("tidyverse")
+library("clifro")
+library("viridis")
+library("showtext")
+library("here")
+library("ggpubr")
+library("patchwork")
+library("extrafont")
+library("SDMTools")
+library("ggbeeswarm")
+```
+
+```{r fonts, include=FALSE, message=FALSE, eval=FALSE}
+# Note that GhostScript needs to be installed at the system level for the PS files to be generated.
+# MacOS users can use `brew install ghostscript`
+# 
+# Windows users can follow these directions:
+# 1.	Go to the GhostScript website (https://www.ghostscript.com/download/gsdnld.html)
+# 2.	Download the windows installer suitable for your machine
+# 3.	Run the installer file which you downloaded and follow the prompts
+# 4.	After running the installer click the windows "Start" button and type "Edit environment variables for your account" and open
+# 5.	In the tab 'Advanced' click the button at the bottom 'Enviroment Variables...'
+# 6.	Under 'System variables' find the variable 'Path', select 'Path' and click the 'Edit' button
+# 7. 	Select a new line and copy the Ghostscript 'bin' folder location into the field.
+# 7.1	If you installed ghostscript to the default folder location; then the folder location will likely be "C:\Program Files\gs\gs9.52\bin", the version number (9.52) may differ.
+# 8.	Save and exit the environmental variables window
+
+
+# This chunk is then run only if knitting on new computer that the files have not been generated on
+# this is necessary to embed fonts in .eps files for EJPP
+library("extrafont")
+
+if (.Platform$OS.type == "windows") {
+   font_import(pattern = "arial", prompt = FALSE)
+   loadfonts(device = "postscript", quiet = TRUE)
+} else {
+   font_import(pattern = "Arial", prompt = FALSE)
+   loadfonts(device = "postscript", quiet = TRUE)
+}
+```
+
+
+### Import data 
+
+```{r import-data}
+dat <- read_excel(system.file("extdata", "lesion_weather_data.xlsx", package = "rainy"), sheet = 1, na= "NA") %>%
+  group_by(rainfall_event) %>%
+  mutate(wind_direction=circular.averaging(wind_direction)) %>%
+ mutate(rainfall_event= as.factor(rainfall_event))
+
+```
+
+### Kernal density plots
+
+```{r data-distribution}
+ggplot(dat, aes(x = mean_lesions)) +
+  geom_density(fill= "steelblue", alpha = 0.7) +
+  geom_rug(alpha = 0.4)
+  xlab("Mean lesions per pot during each rainfall event")
+```
+
+Kernal density plots showing the shape of data distribution. A strong peak at fewer than 35 lesions per pot was observed
+
+### Box plot
+
+```{r boxplots}
+ggplot(dat, aes(
+  x = as.factor(total_rain), y = as.numeric(mean_lesions),
+  fill = as.factor(rainfall_event)
+)) +
+  geom_jitter(alpha = 0.3, color = "steelblue") +
+  geom_boxplot() +
+  scale_fill_viridis_d() +
+  guides(fill = guide_legend(title = "Rainfall event")) +
+  labs(x= "Total rain", y= "Mean lesions per pot")
+
+```
+
+
+```{r save-fig1, include=FALSE, eval=FALSE}
+ggsave(here::here("man", "figures/Fig1.png"))
+ggsave(here::here("man", "figures/Fig1.eps"))
+```
+
+
+### Violin plot 
+
+```{r violin-plot}
+ggplot(dat, aes(
+  x = as.factor(rainfall_event), y = as.numeric(mean_lesions)
+ )) +
+  geom_violin(cex = 0.5, alpha = 0.7, bw = 2.5) +
+  geom_point(alpha = 0.3, size = 0.5) + 
+  labs(x= "Rainfall event", y= "Mean lesions per pot")
+
+```
+
+```{r save-fig2, include=FALSE, eval=FALSE}
+ggsave(here::here("man", "figures/Fig2.png"))
+ggsave(here::here("man", "figures/Fig2.eps"))
+
+```
+
+
+### Beeswarm plot
+
+```{r Beeswarm plot}
+ggplot(dat, aes(
+  x = as.factor(rain_duration), y = as.numeric(mean_lesions) 
+ )) +
+  geom_beeswarm(cex = 0.5, alpha = 0.8) +
+  geom_boxplot(alpha = 0) +
+  labs(x= "Rain duration (hour)", y= "Mean lesions per pot")
+
+```
+
+```{r save-fig3, include=FALSE, eval=FALSE}
+ggsave(here::here("man", "figures/Fig3.png"))
+ggsave(here::here("man", "figures/Fig3.eps"))
+```
+
+### Wind rose
+
+Import wind speed and wind direction data
+```{r wind-rose}
+wind_dat <- read_excel("wind_data.xlsx") %>%
+  mutate(wind_speed = wind_speed/3.6) %>%
+  mutate(wind_direction = as.numeric(wind_direction)) %>%
+  mutate(wind_speed = as.numeric(wind_speed)) %>%
+   mutate(rainfall_event= as.factor(rainfall_event))
+
+```
+
+### Plot wind rose
+
+```{r plot-wind-rose}
+fig_4 <-
+   with(
+      wind_dat,
+      windrose(
+         wind_speed,
+         wind_direction,
+         rainfall_event,
+         n_col = 3,
+         legend_title = "Wind speed (m/s)"
+      )
+   )
+
+fig_4 <-
+   fig_4 +
+   scale_fill_viridis_d(name = "Wind Speed (m/s)", direction = -1) +
+   xlab("") +
+   theme_pubclean(base_family = "Arial")
+
+```
+
+
+```{r save-fig4, include=FALSE, eval=FALSE}
+ggsave(here::here("man", "figures/Fig4.png"))
+ggsave(here::here("man", "figures/Fig4.eps"))
+```
+
+
+
