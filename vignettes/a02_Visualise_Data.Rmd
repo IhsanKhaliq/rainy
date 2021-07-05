@@ -1,9 +1,10 @@
 ---
 title: "Data visualisation"
 date: "28/04/2021"
-rmarkdown::html_vignette
+output:
+  rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{Fit GLMMs}
+  %\VignetteIndexEntry{Data visualisation}
   %\VignetteEngine{knitr::rmarkdown_notangle}
   %\VignetteEncoding{UTF-8}
 ---
