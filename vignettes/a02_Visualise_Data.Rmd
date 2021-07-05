@@ -81,11 +81,14 @@ dat <-
     na = "NA"
   ) %>%
   group_by(rainfall_event) %>%
+  mutate(date = lubridate::as_date(date)) %>%
+  mutate(time = format(as.POSIXct(time, "%Y-%m-%d %H:%M:%S", tz = ""),
+                       format = "%H:%M")) %>%
   mutate(wind_direction = circular.averaging(wind_direction)) %>%
   mutate(rainfall_event = as.factor(rainfall_event))
 ```
 
-### Kernal density plots
+### Kernel density plots
 
 ```{r data-distribution}
 ggplot(dat, aes(x = mean_lesions)) +
