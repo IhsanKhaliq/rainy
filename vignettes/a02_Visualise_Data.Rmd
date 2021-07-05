@@ -170,22 +170,24 @@ wind_dat <-
 
 ```{r plot-wind-rose}
 fig_4 <-
-   with(
-      wind_dat,
-      windrose(
-         wind_speed,
-         wind_direction,
-         rainfall_event,
-         n_col = 3,
-         legend_title = "Wind speed (m/s)"
-      )
-   )
+  with(
+    wind_dat,
+    windrose(
+      wind_speed,
+      wind_direction,
+      rainfall_event,
+      n_col = 3,
+      legend_title = "Wind speed (m/s)"
+    )
+  )
 
 fig_4 <-
-   fig_4 +
-   scale_fill_viridis_d(name = "Wind Speed (m/s)", direction = -1) +
-   xlab("") +
-   theme_pubclean(base_family = "Arial")
+  fig_4 +
+  scale_fill_viridis_d(name = "Wind Speed (m/s)", direction = -1) +
+  xlab("") +
+  theme_pubclean(base_family = "Arial")
+
+fig_4
 
 ```
 
