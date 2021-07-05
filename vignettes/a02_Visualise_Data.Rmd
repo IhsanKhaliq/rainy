@@ -37,6 +37,8 @@ library("patchwork")
 library("extrafont")
 library("SDMTools")
 library("ggbeeswarm")
+
+theme_set(theme_pubclean(base_family = "Arial"))
 ```
 
 ```{r fonts, include=FALSE, message=FALSE, eval=FALSE}
