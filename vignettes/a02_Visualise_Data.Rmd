@@ -129,11 +129,11 @@ ggsave(here::here("man", "figures/Fig1.png"))
 ggsave(here::here("man", "figures/Fig1.eps"), device = cairo_ps)
 ```
 
-
 ### Violin plot 
 
 ```{r violin-plot}
-ggplot(dat, aes(x = as.factor(rainfall_event), y = as.numeric(mean_lesions))) +
+ggplot(dat, aes(x = rainfall_event,
+                y = mean_lesions)) +
   geom_violin(cex = 0.5, alpha = 0.7, bw = 2.5) +
   geom_point(alpha = 0.3, size = 0.5) +
   labs(x = "Rainfall event", y = "Mean lesions per pot")
