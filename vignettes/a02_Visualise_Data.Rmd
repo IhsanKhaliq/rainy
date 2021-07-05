@@ -98,21 +98,28 @@ xlab("Mean lesions per pot during each rainfall event")
 ```
 
 Kernel density plots showing the shape of data distribution.
-A strong peak at fewer than 35 lesions per pot was observed
+A strong peak at fewer than 35 lesions per pot was observed.
 
-### Box plot
+### Scatter plot
 
 ```{r boxplots}
-ggplot(dat, aes(
-  x = as.factor(total_rain),
-  y = as.numeric(mean_lesions),
-  fill = as.factor(rainfall_event)
-)) +
-  geom_jitter(alpha = 0.3, color = "steelblue") +
-  geom_boxplot() +
-  scale_fill_viridis_d() +
-  guides(fill = guide_legend(title = "Rainfall event")) +
-  labs(x = "Total rain", y = "Mean lesions per pot")
+ggplot(
+  dat,
+  aes(
+    x = rain_duration,
+    y = total_rain,
+    colour = rainfall_event,
+    size = mean_lesions
+  ),
+  group = rainfall_event
+) +
+  geom_jitter(alpha = 0.5,
+              width = 0.25) +
+  scale_colour_viridis_d() +
+  guides(colour = guide_legend(title = "Rainfall event"),
+         size = guide_legend(title = "Mean lesions")) +
+  labs(x = "Rainfall event duration (hours)",
+       y = "Total rainfall (mm)")
 
 ```
 
