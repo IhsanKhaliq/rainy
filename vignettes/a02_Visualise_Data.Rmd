@@ -37,6 +37,7 @@ library("patchwork")
 library("extrafont")
 library("SDMTools")
 library("ggbeeswarm")
+library("tidyr")
 
 theme_set(theme_pubclean(base_family = "Arial"))
 ```
@@ -149,7 +150,8 @@ ggsave(here::here("man", "figures/Fig2.eps"), device = cairo_ps)
 ### Beeswarm plot
 
 ```{r Beeswarm plot}
-ggplot(dat, aes(x = as.factor(rain_duration), y = as.numeric(mean_lesions))) +
+ggplot(dat, aes(x = rain_duration,
+                y = mean_lesions)) +
   geom_beeswarm(cex = 0.5, alpha = 0.8) +
   geom_boxplot(alpha = 0) +
   labs(x = "Rain duration (hour)", y = "Mean lesions per pot")
