@@ -175,11 +175,18 @@ Very close observed and predicted values
 ## Plot best fit model
 
 ```{r}
-f1 <- plot(ggpredict(mod4, "total_rain"))
-f2 <- plot(ggpredict(mod4 , "rain_duration"))
-f3 <- plot(ggpredict(mod4, "wind_speed"))
+f1 <-
+  plot(ggpredict(mod4, "total_rain")) + 
+  theme_pubclean(base_family = "Arial")
+f2 <-
+  plot(ggpredict(mod4 , "rain_duration")) + 
+  theme_pubclean(base_family = "Arial")
+f3 <-
+  plot(ggpredict(mod4, "wind_speed")) + 
+  theme_pubclean(base_family = "Arial")
 fig_5 <- grid.arrange(f1, f2, f3)
 
+fig_5
 
 ```
 
@@ -192,6 +199,15 @@ ggsave(
    height = 9,
    units = "in",
    dpi = 600
+)
+
+ggsave(
+   here("man", "figures/fig_5.eps"),
+   plot = fig_5,
+   width = 9,
+   height = 9,
+   units = "in",
+   device =  cairo_ps
 )
 ```
 
