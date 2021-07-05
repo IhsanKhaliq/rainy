@@ -74,10 +74,15 @@ if (.Platform$OS.type == "windows") {
 ### Import data 
 
 ```{r import-data}
-dat <- read_excel(system.file("extdata", "lesion_weather_data.xlsx", package = "rainy"), sheet = 1, na= "NA") %>%
+dat <-
+  read_excel(
+    system.file("extdata", "lesion_weather_data.xlsx", package = "rainy"),
+    sheet = 1,
+    na = "NA"
+  ) %>%
   group_by(rainfall_event) %>%
-  mutate(wind_direction=circular.averaging(wind_direction)) %>%
- mutate(rainfall_event= as.factor(rainfall_event))
+  mutate(wind_direction = circular.averaging(wind_direction)) %>%
+  mutate(rainfall_event = as.factor(rainfall_event))
 
 ```
 
@@ -85,25 +90,27 @@ dat <- read_excel(system.file("extdata", "lesion_weather_data.xlsx", package = "
 
 ```{r data-distribution}
 ggplot(dat, aes(x = mean_lesions)) +
-  geom_density(fill= "steelblue", alpha = 0.7) +
+  geom_density(fill = "steelblue", alpha = 0.7) +
   geom_rug(alpha = 0.4)
-  xlab("Mean lesions per pot during each rainfall event")
+xlab("Mean lesions per pot during each rainfall event")
 ```
 
-Kernal density plots showing the shape of data distribution. A strong peak at fewer than 35 lesions per pot was observed
+Kernel density plots showing the shape of data distribution.
+A strong peak at fewer than 35 lesions per pot was observed
 
 ### Box plot
 
 ```{r boxplots}
 ggplot(dat, aes(
-  x = as.factor(total_rain), y = as.numeric(mean_lesions),
+  x = as.factor(total_rain),
+  y = as.numeric(mean_lesions),
   fill = as.factor(rainfall_event)
 )) +
   geom_jitter(alpha = 0.3, color = "steelblue") +
   geom_boxplot() +
   scale_fill_viridis_d() +
   guides(fill = guide_legend(title = "Rainfall event")) +
-  labs(x= "Total rain", y= "Mean lesions per pot")
+  labs(x = "Total rain", y = "Mean lesions per pot")
 
 ```
 
