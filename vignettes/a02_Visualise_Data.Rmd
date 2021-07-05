@@ -157,11 +157,12 @@ ggsave(here::here("man", "figures/Fig3.eps"))
 
 Import wind speed and wind direction data
 ```{r wind-rose}
-wind_dat <- read_excel("wind_data.xlsx") %>%
-  mutate(wind_speed = wind_speed/3.6) %>%
+wind_dat <-
+  read_excel(system.file("extdata", "wind_data.xlsx", package = "rainy")) %>%
+  mutate(wind_speed = wind_speed / 3.6) %>%
   mutate(wind_direction = as.numeric(wind_direction)) %>%
   mutate(wind_speed = as.numeric(wind_speed)) %>%
-   mutate(rainfall_event= as.factor(rainfall_event))
+  mutate(rainfall_event = as.factor(rainfall_event))
 
 ```
 
