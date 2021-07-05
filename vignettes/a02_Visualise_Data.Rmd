@@ -124,12 +124,10 @@ ggsave(here::here("man", "figures/Fig1.eps"))
 ### Violin plot 
 
 ```{r violin-plot}
-ggplot(dat, aes(
-  x = as.factor(rainfall_event), y = as.numeric(mean_lesions)
- )) +
+ggplot(dat, aes(x = as.factor(rainfall_event), y = as.numeric(mean_lesions))) +
   geom_violin(cex = 0.5, alpha = 0.7, bw = 2.5) +
-  geom_point(alpha = 0.3, size = 0.5) + 
-  labs(x= "Rainfall event", y= "Mean lesions per pot")
+  geom_point(alpha = 0.3, size = 0.5) +
+  labs(x = "Rainfall event", y = "Mean lesions per pot")
 
 ```
 
@@ -143,12 +141,10 @@ ggsave(here::here("man", "figures/Fig2.eps"))
 ### Beeswarm plot
 
 ```{r Beeswarm plot}
-ggplot(dat, aes(
-  x = as.factor(rain_duration), y = as.numeric(mean_lesions) 
- )) +
+ggplot(dat, aes(x = as.factor(rain_duration), y = as.numeric(mean_lesions))) +
   geom_beeswarm(cex = 0.5, alpha = 0.8) +
   geom_boxplot(alpha = 0) +
-  labs(x= "Rain duration (hour)", y= "Mean lesions per pot")
+  labs(x = "Rain duration (hour)", y = "Mean lesions per pot")
 
 ```
 
