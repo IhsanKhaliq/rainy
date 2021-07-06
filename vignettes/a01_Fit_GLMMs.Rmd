@@ -146,6 +146,22 @@ simulateResiduals(mod4, plot = T, quantreg=T)
 
 Very close observed and predicted values 
 
+### Check zero-inflation
+
+```{r check-zero-inflation}
+testZeroInflation(mod4)
+```
+
+No zero inflation detected
+
+### Check overall performance
+
+```{r over-all-performance check}
+performance::check_model(mod4, panel = FALSE)
+```
+
+The model fit non-linear model data distribution assumption, close observed vs. fitted values and there is no significant collinearity between predictors
+
 ## Plot best fit model
 
 ```{r}
