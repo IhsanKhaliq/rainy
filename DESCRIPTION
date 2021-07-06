@@ -6,7 +6,23 @@ Authors@R:
            family = "Last",
            role = c("aut", "cre"),
            email = "first.last@example.com",
-           comment = c(ORCID = "YOUR-ORCID-ID"))
+           comment = c(ORCID = "YOUR-ORCID-ID")),
+           person("Kevin", "Moore",
+           email = "kevin.moore@dpi.nsw.gov.au",
+           role = "aut",
+           comment = c(ORCID = "0000-0001-9643-6885")),
+           person(given = "Adam H.",
+           family = "Sparks",
+           role = c("aut", "ccp"),
+           email = "Adam.Sparks@dpird.wa.gov.au",
+           comment = c(ORCID = "0000-0002-0061-8359")),
+           person(given = "Grains Research and Development Corporation",
+           role = c("fnd", "cph"),
+           comment = "Provided support through funding GRDC Project
+           USQ1903-003RTX")
+           person(given = "Western Australia Agriculture Authority",
+           comment = "Provided support through Adam Sparks' time.",
+           role = c("fnd", "cph")),
 Description: What the package does (one paragraph).
 License: MIT + file LICENSE
 Encoding: UTF-8
