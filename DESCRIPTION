@@ -23,7 +23,29 @@ Authors@R:
            person(given = "Western Australia Agriculture Authority",
            comment = "Provided support through Adam Sparks' time.",
            role = c("fnd", "cph")),
-Description: What the package does (one paragraph).
+Description: Documents the workflow and processes involved in the analysis of
+   data for the paper.
+Depends: R (>= 3.5.0)
+Imports:
+tidyverse,
+dplyr,
+SDMTools,
+glmmTMB,
+DHARMa,
+ggeffects,
+here,
+gridExtra,
+grDevices,
+dplyr,
+ggplot2,
+clifro,
+viridis,
+showtext,
+ggpubr,
+patchwork,
+extrafont,
+ggbeeswarm,
+readxl
 License: MIT + file LICENSE
 Encoding: UTF-8
 LazyData: true
