@@ -26,27 +26,27 @@ Load libraries
 library("readxl")
 library("tidyverse")
 library("dplyr")
-library("SDMTools")
 library("glmmTMB")
 library("DHARMa")
 library("ggeffects")
 library("here")
 library("gridExtra")
+library("rainy")
 ```
 
 ### Import data
 
 ```{r import-data}
 dat <-
-  read_excel(system.file(
-    "extdata",
-    "lesion_weather_data.xlsx",
-    package = "rainy"),
+  read_excel(
+    system.file("extdata",
+                "lesion_weather_data.xlsx",
+                package = "rainy"),
     sheet = 1,
     na = "NA"
   ) %>%
   group_by(rainfall_event) %>%
-  mutate(wind_direction=circular.averaging(wind_direction)) %>%
+  mutate(wind_direction = circular.averaging(wind_direction)) %>%
   mutate(rainfall_event = as.factor(rainfall_event)) %>%
   mutate(total_lesions = as.integer(total_lesions)) 
 ```
@@ -59,18 +59,27 @@ set.seed(42)
 
 ### Model_1 (All variables)
 
-Include all variables with rainfall event as a random effect
+Include all variables with rainfall event as a random effect.
 
 ```{r fit-mod2}
 mod1 <-
   glmmTMB(
-    total_lesions ~  total_rain + rain_duration + relative_humidity + temp + wind_speed + wind_direction + (1|rainfall_event), family = nbinom1,
+    total_lesions ~ total_rain +
+      rain_duration +
+      relative_humidity +
+      temp +
+      wind_speed +
+      wind_direction +
+      (1 | rainfall_event),
+    family = nbinom1,
     data = dat
   )
 
 summary(mod1)
 ```
-The model summary suggest that there are not enough degrees of freedom to fit a complicated model. We can drop relative humidity and temperature because we directly transferred plants to a controlled environment with 20 degree celcius temperature and 100 % RH
+
+The model summary suggest that there are not enough degrees of freedom to fit a complicated model.
+We can drop relative humidity and temperature because we directly transferred plants to a controlled environment with 20 degree Celsius temperature and 100 % RH
 
 ### Model_2
 
@@ -78,7 +87,11 @@ Drop relative humidity and temperature
 ```{r}
 mod2 <-
   glmmTMB(
-    total_lesions ~  total_rain + rain_duration +  wind_speed + wind_direction + (1|rainfall_event), family = nbinom1,
+    total_lesions ~  total_rain +
+      rain_duration +
+      wind_speed +
+      wind_direction + (1 | rainfall_event),
+    family = nbinom1,
     data = dat
   )
 
@@ -94,13 +107,17 @@ Remove wind speed as it is not significant
 ```{r fit-mod-3}
 mod3 <-
   glmmTMB(
-    total_lesions ~  total_rain + rain_duration  + wind_direction + (1|rainfall_event), family = nbinom1,
+    total_lesions ~  total_rain +
+      rain_duration +
+      wind_direction + (1 | rainfall_event),
+    family = nbinom1,
     data = dat
   )
 
 summary(mod3)
 ```
-Again getting a warning message. And the negative impact of increasing rain duration and wind direction does not make any biological sense 
+Again getting a warning message.
+And the negative impact of increasing rain duration and wind direction does not make any biological sense 
 
 ### Model_4
 
@@ -109,7 +126,10 @@ Replace wind direction with wind speed if the warning message could be removed
 ```{r fit-mod4}
 mod4 <-
   glmmTMB(
-    total_lesions ~  total_rain + rain_duration  + wind_speed + (1|rainfall_event), family = nbinom1,
+    total_lesions ~  total_rain +
+      rain_duration +
+      wind_speed + (1 | rainfall_event),
+    family = nbinom1,
     data = dat
   )
 
@@ -126,22 +146,28 @@ Check for over-dispersion using custom function created by Ben Bolker. Here is t
 
 ```{r check-over-dispersion}
 overdisp_fun <- function(model) {
-    rdf <- df.residual(model)
-    rp <- residuals(model,type="pearson")
-    Pearson.chisq <- sum(rp^2)
-    prat <- Pearson.chisq/rdf
-    pval <- pchisq(Pearson.chisq, df=rdf, lower.tail=FALSE)
-    c(chisq=Pearson.chisq,ratio=prat,rdf=rdf,p=pval)
+  rdf <- df.residual(model)
+  rp <- residuals(model, type = "pearson")
+  Pearson.chisq <- sum(rp ^ 2)
+  prat <- Pearson.chisq / rdf
+  pval <- pchisq(Pearson.chisq, df = rdf, lower.tail = FALSE)
+  c(
+    chisq = Pearson.chisq,
+    ratio = prat,
+    rdf = rdf,
+    p = pval
+  )
 }
 overdisp_fun(mod4)
 ```
+
 The larger `p value` shows that there is no significant over-dispersion 
 
 ### Simulate residuals
 
 
 ```{r simulate-residuals}
-simulateResiduals(mod4, plot = T, quantreg=T)
+simulateResiduals(mod4, plot = T, quantreg = T)
 ```
 
 Very close observed and predicted values 
@@ -165,11 +191,18 @@ The model fit non-linear model data distribution assumption, close observed vs. 
 ## Plot best fit model
 
 ```{r}
-f1 <- plot(ggpredict(mod4, "total_rain"))
-f2 <- plot(ggpredict(mod4 , "rain_duration"))
-f3 <- plot(ggpredict(mod4, "wind_speed"))
+f1 <-
+  plot(ggpredict(mod4, "total_rain")) + 
+  theme_pubclean(base_family = "Arial")
+f2 <-
+  plot(ggpredict(mod4 , "rain_duration")) + 
+  theme_pubclean(base_family = "Arial")
+f3 <-
+  plot(ggpredict(mod4, "wind_speed")) + 
+  theme_pubclean(base_family = "Arial")
 fig_5 <- grid.arrange(f1, f2, f3)
 
+fig_5
 
 ```
 
@@ -182,6 +215,15 @@ ggsave(
    height = 9,
    units = "in",
    dpi = 600
+)
+
+ggsave(
+   here("man", "figures/fig_5.eps"),
+   plot = fig_5,
+   width = 9,
+   height = 9,
+   units = "in",
+   device =  cairo_ps
 )
 ```
 

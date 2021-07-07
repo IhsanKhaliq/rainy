@@ -1,6 +1,9 @@
 Package: rainy
-Title: What the Package Does (One Line, Title Case)
+Title: Research Compendium for the Paper ''
 Version: 0.0.0.9000
+Description: Documents the workflow and processes involved in the analysis of
+   data for the paper '', <Paper DOI goes here>.
+License: GPL (>= 3)
 Authors@R: c(person("Ihsanul", "Khaliq",
                      email = "ihsan.khaliq@usq.edu.au",
                      role = c("aut", "cre"),
@@ -21,31 +24,29 @@ Authors@R: c(person("Ihsanul", "Khaliq",
                      comment = "Provided support through Adam Sparks' time.",
                      role = c("fnd", "cph")),
                      person(given = "University of Southern Queensland", role = "cph"))
-Description: Documents the workflow and processes involved in the analysis of
-   data for the paper.
 Depends: R (>= 3.2.0)
-Imports:
-  tidyverse,
-  dplyr,
-  SDMTools,
-  glmmTMB,
-  DHARMa,
-  ggeffects,
-  here,
-  gridExtra,
-  grDevices,
-  dplyr,
-  ggplot2,
-  clifro,
-  viridis,
-  showtext,
-  ggpubr,
-  patchwork,
-  extrafont,
-  ggbeeswarm,
-  readxl
-License: MIT + file LICENSE
 Encoding: UTF-8
 LazyData: true
 Roxygen: list(markdown = TRUE)
-RoxygenNote: 7.1.1
+RoxygenNote: 7.1.1.9001
+VignetteBuilder: knitr
+Suggests:
+  DHARMa,
+  clifro,
+  extrafont,
+  glmmTMB,
+  ggbeeswarm,
+  ggeffects,
+  grDevices,
+  gridExtra,
+  ggpubr,
+  here,
+  knitr,
+  lubridate,
+  patchwork,
+  readxl,
+  rmarkdown,
+  showtext,
+  tidyr,
+  tidyverse,
+  viridis
