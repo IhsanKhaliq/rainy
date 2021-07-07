@@ -4,9 +4,10 @@
 \name{rainy-package}
 \alias{rainy}
 \alias{rainy-package}
-\title{rainy: What the Package Does (One Line, Title Case)}
+\title{rainy: Research Compendium for the Paper ''}
 \description{
-What the package does (one paragraph).
+Documents the workflow and processes involved in the analysis of
+   data for the paper '', <Paper DOI goes here>.
 }
 \author{
 \strong{Maintainer}: Ihsanul Khaliq \email{ihsan.khaliq@usq.edu.au} (\href{https://orcid.org/0000-0003-4171-0917}{ORCID})

@@ -1,5 +1,5 @@
 Package: rainy
-Title: What the Package Does (One Line, Title Case)
+Title: Research Compendium for the Paper ''
 Version: 0.0.0.9000
 Authors@R: 
     c(person("Ihsanul", "Khaliq",
@@ -11,7 +11,8 @@ Authors@R:
                      role = "aut",
                      comment = c(ORCID = "0000-0002-0061-8359")),
                      person("GRDC Project USQ1903-003RTX", role = "fnd"))
-Description: What the package does (one paragraph).
+Description: Documents the workflow and processes involved in the analysis of
+   data for the paper '', <Paper DOI goes here>.
 License: GPL (>= 3)
 Encoding: UTF-8
 LazyData: true
