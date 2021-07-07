@@ -72,7 +72,7 @@
 
       
 
-      </header><script src="a01_Fit_GLMMs_files/header-attrs-2.8/header-attrs.js"></script><div class="row">
+      </header><script src="a01_Fit_GLMMs_files/header-attrs-2.9/header-attrs.js"></script><div class="row">
   <div class="col-md-9 contents">
     <div class="page-header toc-ignore">
       <h1 data-toc-skip>Fit GLMMs</h1>
@@ -153,13 +153,13 @@
 ## 
 ## Conditional model:
 ##                   Estimate Std. Error z value Pr(&gt;|z|)
-## (Intercept)        5.45115         NA      NA       NA
-## total_rain         1.21681         NA      NA       NA
-## rain_duration     -0.68361         NA      NA       NA
-## relative_humidity  0.05549         NA      NA       NA
-## temp              -0.24326         NA      NA       NA
-## wind_speed        -0.01685         NA      NA       NA
-## wind_direction    -0.07448         NA      NA       NA</code></pre>
+## (Intercept)        5.45115        NaN     NaN      NaN
+## total_rain         1.21681        NaN     NaN      NaN
+## rain_duration     -0.68361        NaN     NaN      NaN
+## relative_humidity  0.05549        NaN     NaN      NaN
+## temp              -0.24326        NaN     NaN      NaN
+## wind_speed        -0.01685        NaN     NaN      NaN
+## wind_direction    -0.07448        NaN     NaN      NaN</code></pre>
 <p>The model summary suggest that there are not enough degrees of freedom to fit a complicated model. We can drop relative humidity and temperature because we directly transferred plants to a controlled environment with 20 degree celcius temperature and 100 % RH</p>
 </div>
 <div id="model_2" class="section level3">
@@ -304,6 +304,10 @@
     <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span>chisq<span class="op">=</span><span class="va">Pearson.chisq</span>,ratio<span class="op">=</span><span class="va">prat</span>,rdf<span class="op">=</span><span class="va">rdf</span>,p<span class="op">=</span><span class="va">pval</span><span class="op">)</span>
 <span class="op">}</span>
 <span class="fu">overdisp_fun</span><span class="op">(</span><span class="va">mod4</span><span class="op">)</span></code></pre></div>
+<pre><code>## Warning in TMB::openmp(parallel): OpenMP not supported.</code></pre>
+<pre><code>## Warning in TMB::openmp(n = n_orig): OpenMP not supported.</code></pre>
+<pre><code>## Warning in TMB::openmp(parallel): OpenMP not supported.</code></pre>
+<pre><code>## Warning in TMB::openmp(n = n_orig): OpenMP not supported.</code></pre>
 <pre><code>##      chisq      ratio        rdf          p 
 ## 48.7848259  0.6254465 78.0000000  0.9961281</code></pre>
 <p>The larger <code>p value</code> shows that there is no significant over-dispersion</p>
@@ -311,8 +315,12 @@
 <div id="simulate-residuals" class="section level3">
 <h3 class="hasAnchor">
 <a href="#simulate-residuals" class="anchor"></a>Simulate residuals</h3>
-<div class="sourceCode" id="cb21"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb25"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="fu"><a href="https://rdrr.io/pkg/DHARMa/man/simulateResiduals.html">simulateResiduals</a></span><span class="op">(</span><span class="va">mod4</span>, plot <span class="op">=</span> <span class="cn">T</span>, quantreg<span class="op">=</span><span class="cn">T</span><span class="op">)</span></code></pre></div>
+<pre><code>## Warning in TMB::openmp(parallel): OpenMP not supported.</code></pre>
+<pre><code>## Warning in TMB::openmp(n = n_orig): OpenMP not supported.</code></pre>
+<pre><code>## Warning in TMB::openmp(parallel): OpenMP not supported.</code></pre>
+<pre><code>## Warning in TMB::openmp(n = n_orig): OpenMP not supported.</code></pre>
 <p><img src="a01_Fit_GLMMs_files/figure-html/simulate-residuals-1.png" width="672" style="display: block; margin: auto;"></p>
 <pre><code>## Object of Class DHARMa with simulated residuals based on 250 simulations with refit = FALSE . See ?DHARMa::simulateResiduals for help. 
 ##  
@@ -322,8 +330,12 @@
 <div id="check-zero-inflation" class="section level3">
 <h3 class="hasAnchor">
 <a href="#check-zero-inflation" class="anchor"></a>Check zero-inflation</h3>
-<div class="sourceCode" id="cb23"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb31"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="fu"><a href="https://rdrr.io/pkg/DHARMa/man/testZeroInflation.html">testZeroInflation</a></span><span class="op">(</span><span class="va">mod4</span><span class="op">)</span></code></pre></div>
+<pre><code>## Warning in TMB::openmp(parallel): OpenMP not supported.</code></pre>
+<pre><code>## Warning in TMB::openmp(n = n_orig): OpenMP not supported.</code></pre>
+<pre><code>## Warning in TMB::openmp(parallel): OpenMP not supported.</code></pre>
+<pre><code>## Warning in TMB::openmp(n = n_orig): OpenMP not supported.</code></pre>
 <p><img src="a01_Fit_GLMMs_files/figure-html/check-zero-inflation-1.png" width="672" style="display: block; margin: auto;"></p>
 <pre><code>## 
 ##  DHARMa zero-inflation test via comparison to expected zeros with
@@ -337,24 +349,33 @@
 <div id="check-overall-performance" class="section level3">
 <h3 class="hasAnchor">
 <a href="#check-overall-performance" class="anchor"></a>Check overall performance</h3>
-<div class="sourceCode" id="cb25"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="fu">performance</span><span class="fu">::</span><span class="fu"><a href="https://easystats.github.io/performance/reference/check_model.html">check_model</a></span><span class="op">(</span><span class="va">mod4</span>, panel <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></code></pre></div>
-<pre><code>## Loading required namespace: qqplotr</code></pre>
-<pre><code>## For confidence bands, please install `qqplotr`.</code></pre>
-<p><img src="a01_Fit_GLMMs_files/figure-html/over-all-performance%20check-1.png" width="672" style="display: block; margin: auto;"><img src="a01_Fit_GLMMs_files/figure-html/over-all-performance%20check-2.png" width="672" style="display: block; margin: auto;"><img src="a01_Fit_GLMMs_files/figure-html/over-all-performance%20check-3.png" width="672" style="display: block; margin: auto;"><img src="a01_Fit_GLMMs_files/figure-html/over-all-performance%20check-4.png" width="672" style="display: block; margin: auto;"></p>
+<div class="sourceCode" id="cb37"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="fu">performance</span><span class="fu">::</span><span class="fu">check_model</span><span class="op">(</span><span class="va">mod4</span>, panel <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></code></pre></div>
+<pre><code>## Error in loadNamespace(x): there is no package called 'performance'</code></pre>
 <p>The model fit non-linear model data distribution assumption, close observed vs. fitted values and there is no significant collinearity between predictors</p>
 </div>
 </div>
 <div id="plot-best-fit-model" class="section level2">
 <h2 class="hasAnchor">
 <a href="#plot-best-fit-model" class="anchor"></a>Plot best fit model</h2>
-<div class="sourceCode" id="cb28"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="va">f1</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://strengejacke.github.io/ggeffects/reference/plot.html">plot</a></span><span class="op">(</span><span class="fu"><a href="https://strengejacke.github.io/ggeffects/reference/ggpredict.html">ggpredict</a></span><span class="op">(</span><span class="va">mod4</span>, <span class="st">"total_rain"</span><span class="op">)</span><span class="op">)</span>
-<span class="va">f2</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://strengejacke.github.io/ggeffects/reference/plot.html">plot</a></span><span class="op">(</span><span class="fu"><a href="https://strengejacke.github.io/ggeffects/reference/ggpredict.html">ggpredict</a></span><span class="op">(</span><span class="va">mod4</span> , <span class="st">"rain_duration"</span><span class="op">)</span><span class="op">)</span>
-<span class="va">f3</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://strengejacke.github.io/ggeffects/reference/plot.html">plot</a></span><span class="op">(</span><span class="fu"><a href="https://strengejacke.github.io/ggeffects/reference/ggpredict.html">ggpredict</a></span><span class="op">(</span><span class="va">mod4</span>, <span class="st">"wind_speed"</span><span class="op">)</span><span class="op">)</span>
-<span class="va">fig_5</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/gridExtra/man/arrangeGrob.html">grid.arrange</a></span><span class="op">(</span><span class="va">f1</span>, <span class="va">f2</span>, <span class="va">f3</span><span class="op">)</span></code></pre></div>
+<div class="sourceCode" id="cb39"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="va">f1</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://strengejacke.github.io/ggeffects/reference/plot.html">plot</a></span><span class="op">(</span><span class="fu"><a href="https://strengejacke.github.io/ggeffects/reference/ggpredict.html">ggpredict</a></span><span class="op">(</span><span class="va">mod4</span>, <span class="st">"total_rain"</span><span class="op">)</span><span class="op">)</span></code></pre></div>
+<pre><code>## Warning in TMB::openmp(parallel): OpenMP not supported.</code></pre>
+<pre><code>## Warning in TMB::openmp(n = n_orig): OpenMP not supported.</code></pre>
+<div class="sourceCode" id="cb42"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="va">f2</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://strengejacke.github.io/ggeffects/reference/plot.html">plot</a></span><span class="op">(</span><span class="fu"><a href="https://strengejacke.github.io/ggeffects/reference/ggpredict.html">ggpredict</a></span><span class="op">(</span><span class="va">mod4</span> , <span class="st">"rain_duration"</span><span class="op">)</span><span class="op">)</span></code></pre></div>
+<pre><code>## Warning in TMB::openmp(parallel): OpenMP not supported.
+
+## Warning in TMB::openmp(parallel): OpenMP not supported.</code></pre>
+<div class="sourceCode" id="cb44"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="va">f3</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://strengejacke.github.io/ggeffects/reference/plot.html">plot</a></span><span class="op">(</span><span class="fu"><a href="https://strengejacke.github.io/ggeffects/reference/ggpredict.html">ggpredict</a></span><span class="op">(</span><span class="va">mod4</span>, <span class="st">"wind_speed"</span><span class="op">)</span><span class="op">)</span></code></pre></div>
+<pre><code>## Warning in TMB::openmp(parallel): OpenMP not supported.
+
+## Warning in TMB::openmp(parallel): OpenMP not supported.</code></pre>
+<div class="sourceCode" id="cb46"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="va">fig_5</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/gridExtra/man/arrangeGrob.html">grid.arrange</a></span><span class="op">(</span><span class="va">f1</span>, <span class="va">f2</span>, <span class="va">f3</span><span class="op">)</span></code></pre></div>
 <p><img src="a01_Fit_GLMMs_files/figure-html/unnamed-chunk-2-1.png" width="672" style="display: block; margin: auto;"></p>
-<div class="sourceCode" id="cb29"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb47"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="fu">ggsave</span><span class="op">(</span>
    <span class="fu"><a href="https://here.r-lib.org//reference/here.html">here</a></span><span class="op">(</span><span class="st">"man"</span>, <span class="st">"figures/fig_5.png"</span><span class="op">)</span>,
    plot <span class="op">=</span> <span class="va">fig_5</span>,
@@ -377,7 +398,7 @@
 
 
       <footer><div class="copyright">
-  <p>Developed by .</p>
+  <p>Developed by Ihsanul Khaliq, Kevin Moore, Adam H. Sparks, Grains Research and Development Corporation, Western Australia Agriculture Authority.</p>
 </div>
 
 <div class="pkgdown">
