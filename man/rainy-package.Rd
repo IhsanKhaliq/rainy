@@ -14,12 +14,16 @@ Documents the workflow and processes involved in the analysis of
 
 Authors:
 \itemize{
-  \item Adam H. Sparks \email{adam.sparks@usq.edu.au} (\href{https://orcid.org/0000-0002-0061-8359}{ORCID})
+  \item Kevin Moore \email{kevin.moore@dpi.nsw.gov.au} (\href{https://orcid.org/0000-0001-9643-6885}{ORCID})
+  \item Adam H. Sparks \email{adam.sparks@usq.edu.au} (\href{https://orcid.org/0000-0002-0061-8359}{ORCID}) [conceptor]
 }
 
 Other contributors:
 \itemize{
-  \item GRDC Project USQ1903-003RTX [funder]
+  \item Grains Research and Development Corporation (Provided support through funding GRDC Project
+                     USQ1903-003RTX) [funder, copyright holder]
+  \item Western Australia Agriculture Authority (Provided support through Adam Sparks' time.) [funder, copyright holder]
+  \item University of Southern Queensland [copyright holder]
 }
 
 }

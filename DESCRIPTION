@@ -24,31 +24,7 @@ Authors@R: c(person("Ihsanul", "Khaliq",
                      comment = "Provided support through Adam Sparks' time.",
                      role = c("fnd", "cph")),
                      person(given = "University of Southern Queensland", role = "cph"))
-Description: Documents the workflow and processes involved in the analysis of
-   data for the paper.
 Depends: R (>= 3.2.0)
-Imports:
-  tidyverse,
-  dplyr,
-  SDMTools,
-  glmmTMB,
-  DHARMa,
-  ggeffects,
-  here,
-  gridExtra,
-  grDevices,
-  dplyr,
-  ggplot2,
-  clifro,
-  viridis,
-  showtext,
-  ggpubr,
-  patchwork,
-  extrafont,
-  ggbeeswarm,
-  readxl
-License: MIT + file LICENSE
->>>>>>> master
 Encoding: UTF-8
 LazyData: true
 Roxygen: list(markdown = TRUE)
