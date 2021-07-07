@@ -86,6 +86,8 @@ dat <-
   mutate(time = format(as.POSIXct(time, "%Y-%m-%d %H:%M:%S", tz = ""),
                        format = "%H:%M")) %>%
   mutate(wind_direction = circular.averaging(wind_direction)) %>%
+  mutate(wind_direction = as.numeric(wind_direction)) %>%
+  mutate(rain_duration = as.factor(rain_duration)) %>%
   mutate(rainfall_event = as.factor(rainfall_event))
 ```
 
