@@ -35,8 +35,8 @@ read_csv(system.file(
   mustWork = TRUE
 )) %>%
   mutate(
-    date_time_out = ymd_hm(date_time_out),
-    date_time_removed = ymd_hm(date_time_removed),
+    date_time_out = dmy_hm(date_time_out),
+    date_time_removed = dmy_hm(date_time_removed),
     `Exposure time (hours)` = as.numeric(date_time_removed - date_time_out,
                                          units = "hours"),
     `Date out` = date(date_time_out),
