@@ -1,31 +1,29 @@
 Package: rainy
 Title: What the Package Does (One Line, Title Case)
 Version: 0.0.0.9000
-Authors@R: 
-    person(given = "First",
-           family = "Last",
-           role = c("aut", "cre"),
-           email = "first.last@example.com",
-           comment = c(ORCID = "YOUR-ORCID-ID")),
-           person("Kevin", "Moore",
-           email = "kevin.moore@dpi.nsw.gov.au",
-           role = "aut",
-           comment = c(ORCID = "0000-0001-9643-6885")),
-           person(given = "Adam H.",
-           family = "Sparks",
-           role = c("aut", "ccp"),
-           email = "Adam.Sparks@dpird.wa.gov.au",
-           comment = c(ORCID = "0000-0002-0061-8359")),
-           person(given = "Grains Research and Development Corporation",
-           role = c("fnd", "cph"),
-           comment = "Provided support through funding GRDC Project
-           USQ1903-003RTX")
-           person(given = "Western Australia Agriculture Authority",
-           comment = "Provided support through Adam Sparks' time.",
-           role = c("fnd", "cph")),
+Authors@R: c(person("Ihsanul", "Khaliq",
+                     email = "ihsan.khaliq@usq.edu.au",
+                     role = c("aut", "cre"),
+                     comment = c(ORCID = "0000-0003-4171-0917")),
+                     person("Kevin", "Moore",
+                     email = "kevin.moore@dpi.nsw.gov.au",
+                     role = "aut",
+                     comment = c(ORCID = "0000-0001-9643-6885")),
+                     person("Adam H.", "Sparks",
+                     email = "adam.sparks@usq.edu.au",
+                     role = c("aut", "ccp"),
+                     comment = c(ORCID = "0000-0002-0061-8359")),
+                     person(given = "Grains Research and Development Corporation",
+                     role = c("fnd", "cph"),
+                     comment = "Provided support through funding GRDC Project
+                     USQ1903-003RTX"),
+                     person(given = "Western Australia Agriculture Authority",
+                     comment = "Provided support through Adam Sparks' time.",
+                     role = c("fnd", "cph")),
+                     person(given = "University of Southern Queensland", role = "cph"))
 Description: Documents the workflow and processes involved in the analysis of
    data for the paper.
-Depends: R (>= 3.5.0)
+Depends: R (>= 3.2.0)
 Imports:
   tidyverse,
   dplyr,
