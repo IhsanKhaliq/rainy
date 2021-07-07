@@ -45,6 +45,7 @@ Suggests:
   here,
   knitr,
   lubridate,
+  kableExtra,
   patchwork,
   readxl,
   rmarkdown,
