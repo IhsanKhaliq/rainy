@@ -48,5 +48,6 @@ Suggests:
   rmarkdown,
   showtext,
   tidyr,
+  performance,
   tidyverse,
   viridis
