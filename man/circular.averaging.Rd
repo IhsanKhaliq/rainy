@@ -29,7 +29,7 @@ distance and direction given a vector of directions and a vector of
 distances.
 }
 \details{
-functions return \code{NA} if the average distance or direction is not valid...
+Functions return \code{NA} if the average distance or direction is not valid
 \emph{e.g.}, when averaging directions of 0 & 180 degrees, the result could
 theoretically be 90 or 270 but is practically neither.
 }

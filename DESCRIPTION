@@ -16,14 +16,16 @@ Authors@R: c(person("Ihsanul", "Khaliq",
                      email = "adam.sparks@usq.edu.au",
                      role = c("aut", "ccp"),
                      comment = c(ORCID = "0000-0002-0061-8359")),
-                     person(given = "Grains Research and Development Corporation",
+                     person(given = 
+                        "Grains Research and Development Corporation",
                      role = c("fnd", "cph"),
                      comment = "Provided support through funding GRDC Project
                      USQ1903-003RTX"),
                      person(given = "Western Australia Agriculture Authority",
                      comment = "Provided support through Adam Sparks' time.",
                      role = c("fnd", "cph")),
-                     person(given = "University of Southern Queensland", role = "cph"))
+                     person(given = "University of Southern Queensland",
+                     role = "cph"))
 Depends: R (>= 3.2.0)
 Encoding: UTF-8
 LazyData: true
@@ -43,6 +45,7 @@ Suggests:
   here,
   knitr,
   lubridate,
+  kableExtra,
   patchwork,
   readxl,
   rmarkdown,

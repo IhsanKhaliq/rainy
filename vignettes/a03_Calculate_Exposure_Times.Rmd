@@ -1,0 +1,71 @@
+---
+title: "Calculate exposure times"
+author: "Vignette Author"
+date: "`r Sys.Date()`"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{exposure_times}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r setup, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+Load libraries
+
+```{r libraries, message=FALSE, echo=TRUE, warning=FALSE}
+library("tidyverse")
+library("rainy")
+library("lubridate")
+library("kableExtra")
+```
+
+### Create table
+
+```{r import-data}
+read_csv(system.file(
+  "extdata",
+  "exposure_events.csv",
+  package = "rainy",
+  mustWork = TRUE
+)) %>%
+  mutate(
+    date_time_out = dmy_hm(date_time_out),
+    date_time_removed = dmy_hm(date_time_removed),
+    `Exposure time (hours)` = as.numeric(date_time_removed - date_time_out,
+                                         units = "hours"),
+    `Date out` = date(date_time_out),
+    `Time out` = sprintf("%02d:%02d", hour(date_time_out),
+                         minute(date_time_out)),
+    `Date removed` = date(date_time_removed),
+    `Time removed` = sprintf(
+      "%02d:%02d",
+      hour(date_time_removed),
+      minute(date_time_removed)
+    )
+  ) %>%
+  rename(`Assessment date` = assessment_date,
+         `Rainfall event` = rainfall_event) %>%
+  select(
+    `Rainfall event`,
+    `Date out`,
+    `Time out`,
+    `Date removed`,
+    `Time removed`,
+    `Exposure time (hours)`,
+    `Assessment date`,
+    -c(date_time_out, date_time_removed)
+  ) %>%
+  kable(format = "html",
+        table.attr = "class='table table-hover'",
+        caption = "Date and time trap plants deployed to and removed from
+        agriculture field site (Ag Plot) of the University of Southern
+        Queensland, Toowoobma, Qld with the date chickpea trap plants were
+        assessed for lesions for each rainfall event. Lesions were counted at
+        approximately fortnightly intervals after 48 h of incubation period")
+```
