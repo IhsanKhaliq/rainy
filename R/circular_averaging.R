@@ -1,13 +1,13 @@
 
 #' Circular Averaging based on Vector Averaging
 #'
-#' \code{circular.averaging} calculates the average direction (0 - 360) given a
-#' vector of directions.\cr\cr \code{vector.averaging} calculates the average
+#' `circular.averaging` calculates the average direction (0 - 360) given a
+#' vector of directions.\cr\cr `vector.averaging` calculates the average
 #' distance and direction given a vector of directions and a vector of
 #' distances.
 #'
-#' functions return `NA` if the average distance or direction is not valid...
-#' \emph{e.g.}, when averaging directions of 0 & 180 degrees, the result could
+#' Functions return `NA` if the average distance or direction is not valid
+#' _e.g._, when averaging directions of 0 & 180 degrees, the result could
 #' theoretically be 90 or 270 but is practically neither.
 #'
 #' @note
