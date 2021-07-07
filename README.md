@@ -3,7 +3,7 @@
 
 <!-- badges: start -->
 [![Lifecycle: stable](https://img.shields.io/badge/lifecycle-stable-brightgreen.svg)](https://www.tidyverse.org/lifecycle/#stable) 
-[![DOI](https://zenodo.org/badge/378052232.svg)](https://zenodo.org/badge/latestdoi/378052232))
+[![DOI](https://zenodo.org/badge/378052232.svg)](https://zenodo.org/badge/latestdoi/378052232)
 <!-- badges: end -->
 
 The goal of this project is to investigate the influence of variable rain amount and duration on Ascochyta blight disease in chickpea.
