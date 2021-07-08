@@ -279,7 +279,7 @@ fig_5
 
 ```{r save-fig-5, warning=FALSE}
 ggsave(
-   here("man", "figures/fig_5.png"),
+   here("man", "figures/fig_4.png"),
    plot = fig_5,
    width = 9,
    height = 9,
@@ -288,7 +288,7 @@ ggsave(
 )
 
 ggsave(
-   here("man", "figures/fig_5.eps"),
+   here("man", "figures/fig_4.eps"),
    plot = fig_5,
    width = 9,
    height = 9,
