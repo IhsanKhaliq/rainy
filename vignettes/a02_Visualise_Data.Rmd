@@ -150,9 +150,18 @@ dat <- read_csv(system.file(
     wind_speed = round(mean(`AVERAGE Wind Speed km/h`) * 0.277778, 1) # convert to m/s
   ) %>%
   left_join(lesion_data, by = "rainfall_event") %>%
-  mutate(rainfall_event = as.factor(rainfall_event))
+  mutate(
+    rainfall_event = as.factor(rainfall_event))
 ```
 
+
+Check the data.
+
+```{r kable-dat}
+kable(dat,
+      format = "html",
+      table.attr = "class='table table-hover'")
+```
 
 ### Kernel density plot
 
