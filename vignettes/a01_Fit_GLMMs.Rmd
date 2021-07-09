@@ -65,7 +65,7 @@ lesion_data <- read_csv(system.file(
                names_to = "plant",
                values_to = "lesions") %>% 
   group_by(rainfall_event, pot) %>% 
-  summarise(total_lesions = sum(lesions),
+  summarise(total_lesions = sum(lesions, na.rm = TRUE),
          mean_lesions = round(mean(lesions), 1))
 ```
 
