@@ -119,6 +119,14 @@ dat <- read_csv(system.file(
   mutate(rainfall_event = as.factor(rainfall_event))
 ```
 
+Check the data.
+
+```{r kable-dat}
+kable(dat,
+      format = "html",
+      table.attr = "class='table table-hover'")
+```
+
 Use `set.seed()` for reproducibility purposes
 
 ```{r set-seed, echo=TRUE}
