@@ -228,7 +228,7 @@ ggsave(here::here("man", "figures/Fig1.eps"), device = cairo_ps)
 
 ### Boxplot 
 
-Boxplot of the total lesions for each rainfall event with total rainfall as the colour.
+Box plot of the total lesions for each rainfall event with total rainfall as the colour.
 
 ```{r boxplot-plot, warning=FALSE}
 ggplot(
