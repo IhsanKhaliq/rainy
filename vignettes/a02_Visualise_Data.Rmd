@@ -241,15 +241,16 @@ ggplot(
     fill = total_rain
   )
 ) +
-  geom_boxplot(alpha = 0.5,
-               outlier.shape = NA) +
-  geom_jitter(width = 0.25) +
-  scale_colour_viridis_c(option = "E",
-                         direction = -1,
+  geom_boxplot(alpha = 0.4,
+               outlier.size = 0) +
+  geom_point(size = 5,
+             position = position_jitterdodge()) +
+  scale_colour_viridis_c(direction = -1,
                          name = "Total rainfall (mm)") +
-  scale_fill_viridis_c(option = "E",
-                       direction = -1,
+  scale_fill_viridis_c(direction = -1,
                        name = "Total rainfall (mm)") +
+  scale_y_continuous(breaks = seq(from = 0, to = 130, by = 10),
+                     limits = c(0, 125)) +
   labs(x = "Rainfall event",
        y = "Total lesions per pot") +
   guides(color = guide_colorbar(
