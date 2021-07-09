@@ -107,8 +107,9 @@ lesion_data <- read_csv(system.file(
 Lastly we import the weather data and then:
 
  * filter for only the dates/times with plants deployed,
- * summarise by rainfall event, and then
- * join with the lesion data.
+ * summarise by rainfall event,
+ * join with the lesion data, and then
+ * create a new column with the `total_lesions` outliers filtered to use in the box plot, where outliers appear as a part of the `geom_boxplot()` but not in the `geom_jitter()`.
 
 ```{r create_dat}
 dat <- read_csv(system.file(
