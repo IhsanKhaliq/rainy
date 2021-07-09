@@ -189,12 +189,13 @@ dat %>%
     x = total_rain,
     y = wind_speed,
     size = rain_duration,
-    colour = total_lesions
+    colour = as.factor(total_lesions)
   )) +
   geom_point() +
   scale_size_continuous(range = c(3, 10),
-                        breaks = c(0.7, 1.70, 3.30, 7)) +
-  scale_colour_viridis_c(direction = -1, option = "E") +
+                        breaks = sort(unique(dat$rain_duration),
+                                      decreasing = FALSE)) +
+  scale_colour_viridis_d(direction = -1) +
   guides(
     size = guide_legend(
       title = "Rainfall duration (hour)",
@@ -202,8 +203,8 @@ dat %>%
       title.hjust = 0.5
     ),
     colour = guide_legend(
-      title = "Total lesions per pot",
-      override.aes = list(size = 10),
+      title = "Total lesions per rainfall event",
+      override.aes = list(size = 8),
       title.position = "top",
       title.hjust = 0.5
     )
