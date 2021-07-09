@@ -178,7 +178,7 @@ A strong peak at fewer than 25 lesions per pot was observed.
 ### Scatter plot
 
 Taking the existing `dat` object, group by `rainfall_event` again and calculate the total number of lesions in 12 pots.
-Plot the `total_rain` on the x-axis, `wind_speed` on the y-axis, the `rain_duration` as colour and `total_lesions` as the point size.
+Plot the `total_rain` on the x-axis, `wind_speed` on the y-axis, the `total_lesions` per `rainfall_event` as a factor using colour and `rain_duration` as the point size.
 
 ```{r scatterplot, warning=FALSE}
 dat %>%
