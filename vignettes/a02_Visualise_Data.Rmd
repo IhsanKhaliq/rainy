@@ -286,7 +286,7 @@ wind_dat <-
 ### Plot wind rose
 
 ```{r plot-wind-rose, message=FALSE, warning=FALSE}
-fig_4 <-
+fig_3 <-
   with(
     wind_dat,
     windrose(
@@ -298,14 +298,13 @@ fig_4 <-
     )
   )
 
-fig_4 <-
-  fig_4 +
+fig_3 <-
+  fig_3 +
   scale_fill_viridis_d(name = "Wind Speed (m/s)", direction = -1) +
   xlab("") +
-  theme_pubclean(base_family = "Arial")
+  theme_pubclean(base_family = "Arial", base_size = 15)
 
-fig_4
-
+fig_3
 ```
 
 
@@ -315,4 +314,8 @@ ggsave(here::here("man", "figures/Fig3.eps"), device = cairo_ps)
 ```
 
 
+## Colophon
 
+```{r sessioninfo}
+sessionInfo()
+```

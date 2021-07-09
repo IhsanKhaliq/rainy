@@ -272,23 +272,23 @@ The model fit non-linear model data distribution assumption, close observed vs. 
 ```{r best-fit-plot, warning=FALSE}
 f1 <-
   plot(ggpredict(mod4, "total_rain")) + 
-  theme_pubclean(base_family = "Arial")
+  theme_pubclean(base_family = "Arial", base_size = 15)
 f2 <-
   plot(ggpredict(mod4 , "rain_duration")) + 
-  theme_pubclean(base_family = "Arial")
+  theme_pubclean(base_family = "Arial", base_size = 15)
 f3 <-
   plot(ggpredict(mod4, "wind_speed")) + 
-  theme_pubclean(base_family = "Arial")
-fig_5 <- grid.arrange(f1, f2, f3)
+  theme_pubclean(base_family = "Arial", base_size = 15)
+fig_4 <- grid.arrange(f1, f2, f3)
 
-fig_5
+fig_4
 
 ```
 
 ```{r save-fig-5, warning=FALSE}
 ggsave(
    here("man", "figures/fig_4.png"),
-   plot = fig_5,
+   plot = fig_4,
    width = 9,
    height = 9,
    units = "in",
@@ -297,7 +297,7 @@ ggsave(
 
 ggsave(
    here("man", "figures/fig_4.eps"),
-   plot = fig_5,
+   plot = fig_4,
    width = 9,
    height = 9,
    units = "in",
