@@ -34,8 +34,9 @@ library("extrafont")
 library("rainy")
 library("tidyr")
 library("readxl")
+library("kableExtra")
 
-theme_set(theme_pubclean(base_family = "Arial"))
+theme_set(theme_pubclean(base_family = "Arial", base_size = 15))
 ```
 
 ```{r fonts, include=FALSE, message=FALSE, eval=FALSE, message=FALSE}
