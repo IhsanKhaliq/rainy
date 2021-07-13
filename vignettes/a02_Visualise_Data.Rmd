@@ -1,6 +1,6 @@
 ---
 title: "Data visualisation"
-date: "28/04/2021"
+date: "`r Sys.Date()`"
 output:
   rmarkdown::html_vignette
 vignette: >
@@ -22,10 +22,7 @@ knitr::opts_chunk$set(
 ```
 
 ```{r message=FALSE, echo=TRUE, warning=FALSE}
-library("readxl")
-library("ggplot2")
 library("grDevices")
-library("dplyr")
 library("lubridate")
 library("tidyverse")
 library("clifro")
@@ -33,16 +30,16 @@ library("viridis")
 library("showtext")
 library("here")
 library("ggpubr")
-library("patchwork")
 library("extrafont")
 library("rainy")
-library("ggbeeswarm")
 library("tidyr")
+library("readxl")
+library("kableExtra")
 
-theme_set(theme_pubclean(base_family = "Arial"))
+theme_set(theme_pubclean(base_family = "Arial", base_size = 15))
 ```
 
-```{r fonts, include=FALSE, message=FALSE, eval=TRUE, message=FALSE}
+```{r fonts, include=FALSE, message=FALSE, eval=FALSE, message=FALSE}
 # Note that GhostScript needs to be installed at the system level for the PS files to be generated.
 # MacOS users can use `brew install ghostscript`
 # 
@@ -74,73 +71,198 @@ if (.Platform$OS.type == "windows") {
 
 ### Import data 
 
-```{r import-data}
-dat <-
-  read_excel(
-    system.file("extdata", "lesion_weather_data.xlsx", package = "rainy"),
-    sheet = 1,
-    na = "NA"
-  ) %>%
-  group_by(rainfall_event) %>%
-  mutate(date = lubridate::as_date(date)) %>%
-  mutate(time = format(as.POSIXct(time, "%Y-%m-%d %H:%M:%S", tz = ""),
-                       format = "%H:%M")) %>%
-  mutate(wind_direction = circular.averaging(wind_direction)) %>%
-  mutate(wind_direction = as.numeric(wind_direction)) %>%
-  mutate(rain_duration = as.factor(rain_duration)) %>%
-  mutate(rainfall_event = as.factor(rainfall_event))
+
+```{r import-data, message=FALSE}
+# event data includes dates and time out and removed, exposure hours and 
+# assessment date
+
+event_data <- read_csv(system.file(
+  "extdata",
+  "exposure_events.csv",
+  package = "rainy",
+  mustWork = TRUE
+)) %>%
+  mutate(
+    date_time_out = dmy_hm(date_time_out),
+    date_time_removed = dmy_hm(date_time_removed),
+    exposed = interval(date_time_out, date_time_removed)
+  )
+
+lesion_data <- read_csv(system.file(
+  "extdata",
+  "lesion_data.csv",
+  package = "rainy",
+  mustWork = TRUE
+)) %>%
+  pivot_longer(cols = plant_1:plant_3,
+               names_to = "plant",
+               values_to = "lesions") %>% 
+  group_by(rainfall_event, pot) %>% 
+  summarise(total_lesions = sum(lesions, na.rm = TRUE),
+         mean_lesions = round(mean(lesions), 1))
 ```
 
-### Kernel density plots
+## Create object for analysis
 
-```{r data-distribution}
+Lastly we import the weather data and then:
+
+ * filter for only the dates/times with plants deployed,
+ * summarise by rainfall event,
+ * join with the lesion data, and then
+ * create a new column with the `total_lesions` outliers filtered to use in the box plot, where outliers appear as a part of the `geom_boxplot()` but not in the `geom_jitter()`.
+
+```{r create_dat}
+dat <- read_csv(system.file(
+  "extdata",
+  "weather_data.csv",
+  package = "rainy",
+  mustWork = TRUE
+)) %>%
+  mutate(
+    Date_time = round_date(dmy_hms(paste(Date, Time)), "minute"),
+    rain_duration = as.integer(`TOTAL Rain Gauge mm` > 0),
+    rainfall_event = case_when(
+      Date_time %within% event_data[1, "exposed"] ~ 1,
+      Date_time %within% event_data[2, "exposed"] ~ 2,
+      Date_time %within% event_data[3, "exposed"] ~ 3,
+      Date_time %within% event_data[4, "exposed"] ~ 4,
+      Date_time %within% event_data[5, "exposed"] ~ 5,
+      Date_time %within% event_data[6, "exposed"] ~ 6,
+      Date_time %within% event_data[7, "exposed"] ~ 7
+    )
+  ) %>%
+  filter(
+    Date_time %within% event_data[1, "exposed"] |
+      Date_time %within% event_data[2, "exposed"] |
+      Date_time %within% event_data[3, "exposed"] |
+      Date_time %within% event_data[4, "exposed"] |
+      Date_time %within% event_data[5, "exposed"] |
+      Date_time %within% event_data[6, "exposed"] |
+      Date_time %within% event_data[7, "exposed"]
+  ) %>%
+  group_by(rainfall_event) %>%
+  summarise(
+    wind_direction = round(circular.averaging(`AVERAGE Wind Direction Degs`), 1),
+    total_rain = sum(`TOTAL Rain Gauge mm`),
+    rain_duration = round(sum(rain_duration / 6), 1),
+    temp = round(mean(`AVERAGE Air Temperature DegC`), 1),
+    relative_humidity = round(mean(`AVERAGE Relative Humidity %`), 1),
+    wind_speed = round(mean(`AVERAGE Wind Speed km/h`) * 0.277778, 1) # convert to m/s
+  ) %>%
+  left_join(lesion_data, by = "rainfall_event") %>%
+  mutate(
+    rainfall_event = as.factor(rainfall_event))
+```
+
+
+Check the data.
+
+```{r kable-dat}
+kable(dat,
+      format = "html",
+      table.attr = "class='table table-hover'")
+```
+
+### Kernel density plot
+
+```{r data-distribution, message=FALSE}
 ggplot(dat, aes(x = mean_lesions)) +
   geom_density(fill = "steelblue", alpha = 0.7) +
-  geom_rug(alpha = 0.4)
-xlab("Mean lesions per pot during each rainfall event")
+  geom_rug(alpha = 0.4) +
+  xlab("Total lesions per pot during each rainfall event")
 ```
 
 Kernel density plots showing the shape of data distribution.
-A strong peak at fewer than 35 lesions per pot was observed.
+A strong peak at fewer than 25 lesions per pot was observed.
 
 ### Scatter plot
 
-```{r boxplots}
-ggplot(
-  dat,
-  aes(
-    x = rain_duration,
-    y = total_rain,
-    colour = rainfall_event,
-    size = mean_lesions
-  ),
-  group = rainfall_event
-) +
-  geom_jitter(alpha = 0.5,
-              width = 0.25) +
-  scale_colour_viridis_d() +
-  guides(colour = guide_legend(title = "Rainfall event"),
-         size = guide_legend(title = "Mean lesions")) +
-  labs(x = "Rainfall event duration (hours)",
-       y = "Total rainfall (mm)")
+Taking the existing `dat` object, group by `rainfall_event` again and calculate the total number of lesions in 12 pots.
+Plot the `total_rain` on the x-axis, `wind_speed` on the y-axis, the `total_lesions` per `rainfall_event` as a factor using colour and `rain_duration` as the point size.
 
+```{r scatterplot, warning=FALSE}
+dat %>%
+  group_by(rainfall_event) %>%
+  mutate(total_lesions = sum(total_lesions, na.rm = TRUE)) %>%
+  ungroup() %>%
+  ggplot(aes(
+    x = total_rain,
+    y = wind_speed,
+    size = rain_duration,
+    colour = as.factor(total_lesions)
+  )) +
+  geom_point() +
+  scale_size_continuous(range = c(3, 10),
+                        breaks = sort(unique(dat$rain_duration),
+                                      decreasing = FALSE)) +
+  scale_colour_viridis_d(direction = -1) +
+  guides(
+    size = guide_legend(
+      title = "Rainfall duration (hour)",
+      title.position = "top",
+      title.hjust = 0.5
+    ),
+    colour = guide_legend(
+      title = "Total lesions per rainfall event",
+      override.aes = list(size = 8),
+      title.position = "top",
+      title.hjust = 0.5
+    )
+  ) +
+  scale_x_continuous(breaks = seq(from = 0, to = 14, by = 1),
+                     limits = c(0, 14)) +
+  scale_y_continuous(breaks = seq(from = 2, to = 5, by = 0.25),
+                     limits = c(2.75, 4.75)) +
+  labs(y = "Wind speed (m/s)",
+       x = "Total rainfall (mm)") +
+  theme(legend.key = element_blank(),
+        plot.margin = margin(25, 25, 10, 25)) +
+  coord_cartesian(clip = "off",
+                  expand = FALSE)
 ```
-
 
 ```{r save-fig1, include=FALSE, eval=TRUE}
 ggsave(here::here("man", "figures/Fig1.png"))
 ggsave(here::here("man", "figures/Fig1.eps"), device = cairo_ps)
 ```
 
-### Violin plot 
+### Boxplot 
 
-```{r violin-plot}
-ggplot(dat, aes(x = rainfall_event,
-                y = mean_lesions)) +
-  geom_violin(cex = 0.5, alpha = 0.7, bw = 2.5) +
-  geom_point(alpha = 0.3, size = 0.5) +
-  labs(x = "Rainfall event", y = "Mean lesions per pot")
+Box plot of the total lesions for each rainfall event with total rainfall as the colour.
 
+```{r boxplot-plot, warning=FALSE}
+ggplot(
+  dat,
+  aes(
+    x = rainfall_event,
+    y = total_lesions,
+    group = rainfall_event,
+    colour = total_rain,
+    fill = total_rain
+  )
+) +
+  geom_boxplot(alpha = 0.4,
+               outlier.size = 0) +
+  geom_point(size = 5,
+             position = position_jitterdodge()) +
+  scale_colour_viridis_c(direction = -1,
+                         name = "Total rainfall (mm)") +
+  scale_fill_viridis_c(direction = -1,
+                       name = "Total rainfall (mm)") +
+  scale_y_continuous(breaks = seq(from = 0, to = 130, by = 10),
+                     limits = c(0, 125)) +
+  labs(x = "Rainfall event",
+       y = "Total lesions per pot") +
+  guides(color = guide_colorbar(
+    title.position = "top",
+    title.hjust = 0.5,
+    barwidth = unit(20, "lines"),
+    barheight = unit(0.5, "lines")
+  )) +
+  theme(legend.key = element_blank(),
+        plot.margin = margin(25, 25, 10, 25)) +
+  coord_cartesian(clip = "off",
+                  expand = FALSE)
 ```
 
 ```{r save-fig2, include=FALSE, eval=TRUE}
@@ -148,26 +270,9 @@ ggsave(here::here("man", "figures/Fig2.png"))
 ggsave(here::here("man", "figures/Fig2.eps"), device = cairo_ps)
 ```
 
-
-### Beeswarm plot
-
-```{r Beeswarm plot}
-ggplot(dat, aes(x = rain_duration,
-                y = mean_lesions)) +
-  geom_beeswarm(cex = 0.5, alpha = 0.8) +
-  geom_boxplot(alpha = 0) +
-  labs(x = "Rain duration (hour)", y = "Mean lesions per pot")
-
-```
-
-```{r save-fig3, include=FALSE, eval=TRUE}
-ggsave(here::here("man", "figures/Fig3.png"))
-ggsave(here::here("man", "figures/Fig3.eps"), device = cairo_ps)
-```
-
 ### Wind rose
 
-Import wind speed and wind direction data
+Import wind speed and wind direction data.
 
 ```{r wind-rose}
 wind_dat <-
@@ -176,13 +281,12 @@ wind_dat <-
   mutate(wind_direction = as.numeric(wind_direction)) %>%
   mutate(wind_speed = as.numeric(wind_speed)) %>%
   mutate(rainfall_event = as.factor(rainfall_event))
-
 ```
 
 ### Plot wind rose
 
-```{r plot-wind-rose}
-fig_4 <-
+```{r plot-wind-rose, message=FALSE, warning=FALSE}
+fig_3 <-
   with(
     wind_dat,
     windrose(
@@ -194,21 +298,24 @@ fig_4 <-
     )
   )
 
-fig_4 <-
-  fig_4 +
+fig_3 <-
+  fig_3 +
   scale_fill_viridis_d(name = "Wind Speed (m/s)", direction = -1) +
   xlab("") +
-  theme_pubclean(base_family = "Arial")
+  theme_pubclean(base_family = "Arial", base_size = 15)
 
-fig_4
-
+fig_3
 ```
 
 
 ```{r save-fig4, include=FALSE, eval=TRUE}
-ggsave(here::here("man", "figures/Fig4.png"))
-ggsave(here::here("man", "figures/Fig4.eps"), device = cairo_ps)
+ggsave(here::here("man", "figures/Fig3.png"))
+ggsave(here::here("man", "figures/Fig3.eps"), device = cairo_ps)
 ```
 
 
+## Colophon
 
+```{r sessioninfo}
+sessionInfo()
+```

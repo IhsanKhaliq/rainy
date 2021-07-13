@@ -37,8 +37,9 @@ read_csv(system.file(
   mutate(
     date_time_out = dmy_hm(date_time_out),
     date_time_removed = dmy_hm(date_time_removed),
-    `Exposure time (hours)` = as.numeric(date_time_removed - date_time_out,
-                                         units = "hours"),
+    `Exposure time (hours)` = round(
+      as.numeric(date_time_removed - date_time_out,
+                                         units = "hours"), 1),
     `Date out` = date(date_time_out),
     `Time out` = sprintf("%02d:%02d", hour(date_time_out),
                          minute(date_time_out)),

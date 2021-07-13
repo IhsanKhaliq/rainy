@@ -1,6 +1,6 @@
 ---
 title: "Fit GLMMs"
-date: "29/04/2021"
+date: "`r Sys.Date()`"
 output:
    rmarkdown::html_vignette
 vignette: >
@@ -12,6 +12,7 @@ vignette: >
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE, error = TRUE)
 knitr::opts_chunk$set(progress = TRUE, verbose = TRUE)
+knitr::opts_chunk$set(message = FALSE) 
 knitr::opts_chunk$set(
   echo = TRUE,
   fig.width = 7,
@@ -22,7 +23,7 @@ knitr::opts_chunk$set(
 
 Load libraries
 
-```{r libraries, message=FALSE, echo=TRUE, warning=FALSE}
+```{r libraries, echo=TRUE, warning=FALSE}
 library("readxl")
 library("tidyverse")
 library("dplyr")
@@ -32,23 +33,98 @@ library("ggeffects")
 library("here")
 library("gridExtra")
 library("rainy")
+library("lubridate")
+library("ggpubr")
 ```
 
 ### Import data
 
 ```{r import-data}
-dat <-
-  read_excel(
-    system.file("extdata",
-                "lesion_weather_data.xlsx",
-                package = "rainy"),
-    sheet = 1,
-    na = "NA"
+# event data includes dates and time out and removed, exposure hours and 
+# assessment date
+
+event_data <- read_csv(system.file(
+  "extdata",
+  "exposure_events.csv",
+  package = "rainy",
+  mustWork = TRUE
+)) %>%
+  mutate(
+    date_time_out = dmy_hm(date_time_out),
+    date_time_removed = dmy_hm(date_time_removed),
+    exposed = interval(date_time_out, date_time_removed)
+  )
+
+lesion_data <- read_csv(system.file(
+  "extdata",
+  "lesion_data.csv",
+  package = "rainy",
+  mustWork = TRUE
+)) %>%
+  pivot_longer(cols = plant_1:plant_3,
+               names_to = "plant",
+               values_to = "lesions") %>% 
+  group_by(rainfall_event, pot) %>% 
+  summarise(total_lesions = sum(lesions, na.rm = TRUE),
+         mean_lesions = round(mean(lesions), 1))
+```
+
+## Create object for analysis
+
+Lastly we import the weather data and then:
+
+ * filter for only the dates/times with plants deployed,
+ * summarise by rainfall event, and then
+ * join with the lesion data.
+
+```{r create_dat}
+dat <- read_csv(system.file(
+  "extdata",
+  "weather_data.csv",
+  package = "rainy",
+  mustWork = TRUE
+)) %>%
+  mutate(
+    Date_time = round_date(dmy_hms(paste(Date, Time)), "minute"),
+    rain_duration = as.integer(`TOTAL Rain Gauge mm` > 0),
+    rainfall_event = case_when(
+      Date_time %within% event_data[1, "exposed"] ~ 1,
+      Date_time %within% event_data[2, "exposed"] ~ 2,
+      Date_time %within% event_data[3, "exposed"] ~ 3,
+      Date_time %within% event_data[4, "exposed"] ~ 4,
+      Date_time %within% event_data[5, "exposed"] ~ 5,
+      Date_time %within% event_data[6, "exposed"] ~ 6,
+      Date_time %within% event_data[7, "exposed"] ~ 7
+    )
+  ) %>%
+  filter(
+    Date_time %within% event_data[1, "exposed"] |
+      Date_time %within% event_data[2, "exposed"] |
+      Date_time %within% event_data[3, "exposed"] |
+      Date_time %within% event_data[4, "exposed"] |
+      Date_time %within% event_data[5, "exposed"] |
+      Date_time %within% event_data[6, "exposed"] |
+      Date_time %within% event_data[7, "exposed"]
   ) %>%
   group_by(rainfall_event) %>%
-  mutate(wind_direction = circular.averaging(wind_direction)) %>%
-  mutate(rainfall_event = as.factor(rainfall_event)) %>%
-  mutate(total_lesions = as.integer(total_lesions)) 
+  summarise(
+    wind_direction = round(circular.averaging(`AVERAGE Wind Direction Degs`), 1),
+    total_rain = sum(`TOTAL Rain Gauge mm`),
+    rain_duration = round(sum(rain_duration / 6), 1),
+    temp = round(mean(`AVERAGE Air Temperature DegC`), 1),
+    relative_humidity = round(mean(`AVERAGE Relative Humidity %`), 1),
+    wind_speed = round(mean(`AVERAGE Wind Speed km/h`) * 0.277778, 1) # convert to m/s
+  ) %>%
+  left_join(lesion_data, by = "rainfall_event") %>%
+  mutate(rainfall_event = as.factor(rainfall_event))
+```
+
+Check the data.
+
+```{r kable-dat}
+kable(dat,
+      format = "html",
+      table.attr = "class='table table-hover'")
 ```
 
 Use `set.seed()` for reproducibility purposes
@@ -61,7 +137,7 @@ set.seed(42)
 
 Include all variables with rainfall event as a random effect.
 
-```{r fit-mod2}
+```{r mod1}
 mod1 <-
   glmmTMB(
     total_lesions ~ total_rain +
@@ -84,7 +160,7 @@ We can drop relative humidity and temperature because we directly transferred pl
 ### Model_2
 
 Drop relative humidity and temperature 
-```{r}
+```{r mod2}
 mod2 <-
   glmmTMB(
     total_lesions ~  total_rain +
@@ -126,9 +202,11 @@ Replace wind direction with wind speed if the warning message could be removed
 ```{r fit-mod4}
 mod4 <-
   glmmTMB(
-    total_lesions ~  total_rain +
+    total_lesions ~
+      total_rain +
       rain_duration +
-      wind_speed + (1 | rainfall_event),
+      wind_speed +
+      (1 | rainfall_event),
     family = nbinom1,
     data = dat
   )
@@ -136,15 +214,16 @@ mod4 <-
 summary(mod4)
 ```
 
-The warning message has gone now. The reason is that wind direction did not vary much during different rainfall events, whereas wind speed varied. We can go with `mod4`
+The warning message has gone now. The reason is that wind direction did not vary much during different rainfall events, whereas wind speed varied. We can go with `mod4`.
 
 ## Best fit model `mod4` diagnostics
 
 ### Check over-dispersion
 
-Check for over-dispersion using custom function created by Ben Bolker. Here is the  [link](http://bbolker.github.io/mixedmodels-misc/glmmFAQ.html#overdispersion)
+Check for over-dispersion using custom function created by Ben Bolker.
+Here is the [link](http://bbolker.github.io/mixedmodels-misc/glmmFAQ.html#overdispersion).
 
-```{r check-over-dispersion}
+```{r check-over-dispersion, warning=FALSE}
 overdisp_fun <- function(model) {
   rdf <- df.residual(model)
   rp <- residuals(model, type = "pearson")
@@ -161,12 +240,12 @@ overdisp_fun <- function(model) {
 overdisp_fun(mod4)
 ```
 
-The larger `p value` shows that there is no significant over-dispersion 
+The larger `p value` shows that there is no significant over-dispersion.
 
 ### Simulate residuals
 
 
-```{r simulate-residuals}
+```{r simulate-residuals, warning=FALSE}
 simulateResiduals(mod4, plot = T, quantreg = T)
 ```
 
@@ -174,7 +253,7 @@ Very close observed and predicted values
 
 ### Check zero-inflation
 
-```{r check-zero-inflation}
+```{r check-zero-inflation, warning=FALSE}
 testZeroInflation(mod4)
 ```
 
@@ -182,35 +261,34 @@ No zero inflation detected
 
 ### Check overall performance
 
-```{r over-all-performance check}
+```{r over-all-performance check, warning=FALSE}
 performance::check_model(mod4, panel = FALSE)
 ```
 
-The model fit non-linear model data distribution assumption, close observed vs. fitted values and there is no significant collinearity between predictors
+The model fit non-linear model data distribution assumption, close observed vs. fitted values and there is no significant collinearity between predictors.
 
 ## Plot best fit model
 
-```{r}
+```{r best-fit-plot, warning=FALSE}
 f1 <-
   plot(ggpredict(mod4, "total_rain")) + 
-  theme_pubclean(base_family = "Arial")
+  theme_pubclean(base_family = "Arial", base_size = 15)
 f2 <-
   plot(ggpredict(mod4 , "rain_duration")) + 
-  theme_pubclean(base_family = "Arial")
+  theme_pubclean(base_family = "Arial", base_size = 15)
 f3 <-
   plot(ggpredict(mod4, "wind_speed")) + 
-  theme_pubclean(base_family = "Arial")
-fig_5 <- grid.arrange(f1, f2, f3)
+  theme_pubclean(base_family = "Arial", base_size = 15)
+fig_4 <- grid.arrange(f1, f2, f3)
 
-fig_5
+fig_4
 
 ```
 
-
-```{r}
+```{r save-fig-5, warning=FALSE}
 ggsave(
-   here("man", "figures/fig_5.png"),
-   plot = fig_5,
+   here("man", "figures/fig_4.png"),
+   plot = fig_4,
    width = 9,
    height = 9,
    units = "in",
@@ -218,8 +296,8 @@ ggsave(
 )
 
 ggsave(
-   here("man", "figures/fig_5.eps"),
-   plot = fig_5,
+   here("man", "figures/fig_4.eps"),
+   plot = fig_4,
    width = 9,
    height = 9,
    units = "in",
@@ -227,5 +305,8 @@ ggsave(
 )
 ```
 
+## Colophon
 
-
+```{r sessioninfo}
+sessionInfo()
+```
