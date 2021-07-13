@@ -4,10 +4,10 @@
 \name{rainy-package}
 \alias{rainy}
 \alias{rainy-package}
-\title{rainy: Research Compendium for the Paper 'The relationship between rain intensity and Ascochyta blight in chickpea development'}
+\title{rainy: Research Compendium for the Paper ''}
 \description{
 Documents the workflow and processes involved in the analysis of
-   data for the paper '', <https://zenodo.org/badge/latestdoi/378052232>.
+   data for the paper '', <Paper DOI goes here>.
 }
 \author{
 \strong{Maintainer}: Ihsanul Khaliq \email{ihsan.khaliq@usq.edu.au} (\href{https://orcid.org/0000-0003-4171-0917}{ORCID})
