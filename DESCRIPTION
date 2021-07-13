@@ -1,8 +1,8 @@
 Package: rainy
-Title: Research Compendium for the Paper ''
+Title: Research Compendium for the Paper 'The relationship between rain intensity and Ascochyta blight in chickpea development'
 Version: 0.0.0.9000
 Description: Documents the workflow and processes involved in the analysis of
-   data for the paper '', <Paper DOI goes here>.
+   data for the paper '', <https://zenodo.org/badge/latestdoi/378052232>.
 License: GPL (>= 3)
 Authors@R: c(person("Ihsanul", "Khaliq",
                      email = "ihsan.khaliq@usq.edu.au",
