@@ -1,8 +1,9 @@
-pandoc: 2.11.4
+pandoc: 2.14.0.1
 pkgdown: 1.6.1
 pkgdown_sha: ~
 articles:
   a01_Fit_GLMMs: a01_Fit_GLMMs.html
   a02_Visualise_Data: a02_Visualise_Data.html
-last_built: 2021-07-07T01:02Z
+  a03_Calculate_Exposure_Times: a03_Calculate_Exposure_Times.html
+last_built: 2021-07-14T00:48Z
 

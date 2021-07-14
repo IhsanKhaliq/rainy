@@ -59,6 +59,9 @@
     <li>
       <a href="../articles/a02_Visualise_Data.html">Data visualisation</a>
     </li>
+    <li>
+      <a href="../articles/a03_Calculate_Exposure_Times.html">Calculate exposure times</a>
+    </li>
   </ul>
 </li>
       </ul>
@@ -77,7 +80,7 @@
     <div class="page-header toc-ignore">
       <h1 data-toc-skip>Fit GLMMs</h1>
             
-            <h4 class="date">29/04/2021</h4>
+            <h4 class="date">2021-07-14</h4>
       
       
       <div class="hidden name"><code>a01_Fit_GLMMs.Rmd</code></div>
@@ -91,47 +94,124 @@
 <code class="sourceCode R"><span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="st"><a href="https://readxl.tidyverse.org">"readxl"</a></span><span class="op">)</span>
 <span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="st"><a href="https://tidyverse.tidyverse.org">"tidyverse"</a></span><span class="op">)</span>
 <span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="st"><a href="https://dplyr.tidyverse.org">"dplyr"</a></span><span class="op">)</span>
-<span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="st"><a href="http://www.rforge.net/SDMTools/">"SDMTools"</a></span><span class="op">)</span>
 <span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="st"><a href="https://github.com/glmmTMB/glmmTMB">"glmmTMB"</a></span><span class="op">)</span>
 <span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="st"><a href="http://florianhartig.github.io/DHARMa/">"DHARMa"</a></span><span class="op">)</span>
 <span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="st"><a href="https://strengejacke.github.io/ggeffects/">"ggeffects"</a></span><span class="op">)</span>
 <span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="st"><a href="https://here.r-lib.org/">"here"</a></span><span class="op">)</span>
-<span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="st">"gridExtra"</span><span class="op">)</span></code></pre></div>
+<span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="st">"gridExtra"</span><span class="op">)</span>
+<span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="st">"rainy"</span><span class="op">)</span>
+<span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="st"><a href="https://lubridate.tidyverse.org">"lubridate"</a></span><span class="op">)</span>
+<span class="kw"><a href="https://rdrr.io/r/base/library.html">library</a></span><span class="op">(</span><span class="st"><a href="https://rpkgs.datanovia.com/ggpubr/">"ggpubr"</a></span><span class="op">)</span></code></pre></div>
 <div id="import-data" class="section level3">
 <h3 class="hasAnchor">
 <a href="#import-data" class="anchor"></a>Import data</h3>
 <div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="va">dat</span> <span class="op">&lt;-</span>
-  <span class="fu"><a href="https://readxl.tidyverse.org/reference/read_excel.html">read_excel</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/system.file.html">system.file</a></span><span class="op">(</span>
-    <span class="st">"extdata"</span>,
-    <span class="st">"lesion_weather_data.xlsx"</span>,
-    package <span class="op">=</span> <span class="st">"rainy"</span><span class="op">)</span>,
-    sheet <span class="op">=</span> <span class="fl">1</span>,
-    na <span class="op">=</span> <span class="st">"NA"</span>
+<code class="sourceCode R"><span class="co"># event data includes dates and time out and removed, exposure hours and </span>
+<span class="co"># assessment date</span>
+
+<span class="va">event_data</span> <span class="op">&lt;-</span> <span class="fu">read_csv</span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/system.file.html">system.file</a></span><span class="op">(</span>
+  <span class="st">"extdata"</span>,
+  <span class="st">"exposure_events.csv"</span>,
+  package <span class="op">=</span> <span class="st">"rainy"</span>,
+  mustWork <span class="op">=</span> <span class="cn">TRUE</span>
+<span class="op">)</span><span class="op">)</span> <span class="op">%&gt;%</span>
+  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html">mutate</a></span><span class="op">(</span>
+    date_time_out <span class="op">=</span> <span class="fu"><a href="http://lubridate.tidyverse.org/reference/ymd_hms.html">dmy_hm</a></span><span class="op">(</span><span class="va">date_time_out</span><span class="op">)</span>,
+    date_time_removed <span class="op">=</span> <span class="fu"><a href="http://lubridate.tidyverse.org/reference/ymd_hms.html">dmy_hm</a></span><span class="op">(</span><span class="va">date_time_removed</span><span class="op">)</span>,
+    exposed <span class="op">=</span> <span class="fu"><a href="http://lubridate.tidyverse.org/reference/interval.html">interval</a></span><span class="op">(</span><span class="va">date_time_out</span>, <span class="va">date_time_removed</span><span class="op">)</span>
+  <span class="op">)</span>
+
+<span class="va">lesion_data</span> <span class="op">&lt;-</span> <span class="fu">read_csv</span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/system.file.html">system.file</a></span><span class="op">(</span>
+  <span class="st">"extdata"</span>,
+  <span class="st">"lesion_data.csv"</span>,
+  package <span class="op">=</span> <span class="st">"rainy"</span>,
+  mustWork <span class="op">=</span> <span class="cn">TRUE</span>
+<span class="op">)</span><span class="op">)</span> <span class="op">%&gt;%</span>
+  <span class="fu">pivot_longer</span><span class="op">(</span>cols <span class="op">=</span> <span class="va">plant_1</span><span class="op">:</span><span class="va">plant_3</span>,
+               names_to <span class="op">=</span> <span class="st">"plant"</span>,
+               values_to <span class="op">=</span> <span class="st">"lesions"</span><span class="op">)</span> <span class="op">%&gt;%</span> 
+  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/group_by.html">group_by</a></span><span class="op">(</span><span class="va">rainfall_event</span>, <span class="va">pot</span><span class="op">)</span> <span class="op">%&gt;%</span> 
+  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/summarise.html">summarise</a></span><span class="op">(</span>total_lesions <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/sum.html">sum</a></span><span class="op">(</span><span class="va">lesions</span>, na.rm <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span>,
+         mean_lesions <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/Round.html">round</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/mean.html">mean</a></span><span class="op">(</span><span class="va">lesions</span><span class="op">)</span>, <span class="fl">1</span><span class="op">)</span><span class="op">)</span></code></pre></div>
+</div>
+<div id="create-object-for-analysis" class="section level2">
+<h2 class="hasAnchor">
+<a href="#create-object-for-analysis" class="anchor"></a>Create object for analysis</h2>
+<p>Lastly we import the weather data and then:</p>
+<ul>
+<li>filter for only the dates/times with plants deployed,</li>
+<li>summarise by rainfall event, and then</li>
+<li>join with the lesion data.</li>
+</ul>
+<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="va">dat</span> <span class="op">&lt;-</span> <span class="fu">read_csv</span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/system.file.html">system.file</a></span><span class="op">(</span>
+  <span class="st">"extdata"</span>,
+  <span class="st">"weather_data.csv"</span>,
+  package <span class="op">=</span> <span class="st">"rainy"</span>,
+  mustWork <span class="op">=</span> <span class="cn">TRUE</span>
+<span class="op">)</span><span class="op">)</span> <span class="op">%&gt;%</span>
+  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html">mutate</a></span><span class="op">(</span>
+    Date_time <span class="op">=</span> <span class="fu"><a href="http://lubridate.tidyverse.org/reference/round_date.html">round_date</a></span><span class="op">(</span><span class="fu"><a href="http://lubridate.tidyverse.org/reference/ymd_hms.html">dmy_hms</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/paste.html">paste</a></span><span class="op">(</span><span class="va">Date</span>, <span class="va">Time</span><span class="op">)</span><span class="op">)</span>, <span class="st">"minute"</span><span class="op">)</span>,
+    rain_duration <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/integer.html">as.integer</a></span><span class="op">(</span><span class="va">`TOTAL Rain Gauge mm`</span> <span class="op">&gt;</span> <span class="fl">0</span><span class="op">)</span>,
+    rainfall_event <span class="op">=</span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/case_when.html">case_when</a></span><span class="op">(</span>
+      <span class="va">Date_time</span> <span class="op">%within%</span> <span class="va">event_data</span><span class="op">[</span><span class="fl">1</span>, <span class="st">"exposed"</span><span class="op">]</span> <span class="op">~</span> <span class="fl">1</span>,
+      <span class="va">Date_time</span> <span class="op">%within%</span> <span class="va">event_data</span><span class="op">[</span><span class="fl">2</span>, <span class="st">"exposed"</span><span class="op">]</span> <span class="op">~</span> <span class="fl">2</span>,
+      <span class="va">Date_time</span> <span class="op">%within%</span> <span class="va">event_data</span><span class="op">[</span><span class="fl">3</span>, <span class="st">"exposed"</span><span class="op">]</span> <span class="op">~</span> <span class="fl">3</span>,
+      <span class="va">Date_time</span> <span class="op">%within%</span> <span class="va">event_data</span><span class="op">[</span><span class="fl">4</span>, <span class="st">"exposed"</span><span class="op">]</span> <span class="op">~</span> <span class="fl">4</span>,
+      <span class="va">Date_time</span> <span class="op">%within%</span> <span class="va">event_data</span><span class="op">[</span><span class="fl">5</span>, <span class="st">"exposed"</span><span class="op">]</span> <span class="op">~</span> <span class="fl">5</span>,
+      <span class="va">Date_time</span> <span class="op">%within%</span> <span class="va">event_data</span><span class="op">[</span><span class="fl">6</span>, <span class="st">"exposed"</span><span class="op">]</span> <span class="op">~</span> <span class="fl">6</span>,
+      <span class="va">Date_time</span> <span class="op">%within%</span> <span class="va">event_data</span><span class="op">[</span><span class="fl">7</span>, <span class="st">"exposed"</span><span class="op">]</span> <span class="op">~</span> <span class="fl">7</span>
+    <span class="op">)</span>
+  <span class="op">)</span> <span class="op">%&gt;%</span>
+  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html">filter</a></span><span class="op">(</span>
+    <span class="va">Date_time</span> <span class="op">%within%</span> <span class="va">event_data</span><span class="op">[</span><span class="fl">1</span>, <span class="st">"exposed"</span><span class="op">]</span> <span class="op">|</span>
+      <span class="va">Date_time</span> <span class="op">%within%</span> <span class="va">event_data</span><span class="op">[</span><span class="fl">2</span>, <span class="st">"exposed"</span><span class="op">]</span> <span class="op">|</span>
+      <span class="va">Date_time</span> <span class="op">%within%</span> <span class="va">event_data</span><span class="op">[</span><span class="fl">3</span>, <span class="st">"exposed"</span><span class="op">]</span> <span class="op">|</span>
+      <span class="va">Date_time</span> <span class="op">%within%</span> <span class="va">event_data</span><span class="op">[</span><span class="fl">4</span>, <span class="st">"exposed"</span><span class="op">]</span> <span class="op">|</span>
+      <span class="va">Date_time</span> <span class="op">%within%</span> <span class="va">event_data</span><span class="op">[</span><span class="fl">5</span>, <span class="st">"exposed"</span><span class="op">]</span> <span class="op">|</span>
+      <span class="va">Date_time</span> <span class="op">%within%</span> <span class="va">event_data</span><span class="op">[</span><span class="fl">6</span>, <span class="st">"exposed"</span><span class="op">]</span> <span class="op">|</span>
+      <span class="va">Date_time</span> <span class="op">%within%</span> <span class="va">event_data</span><span class="op">[</span><span class="fl">7</span>, <span class="st">"exposed"</span><span class="op">]</span>
   <span class="op">)</span> <span class="op">%&gt;%</span>
   <span class="fu"><a href="https://dplyr.tidyverse.org/reference/group_by.html">group_by</a></span><span class="op">(</span><span class="va">rainfall_event</span><span class="op">)</span> <span class="op">%&gt;%</span>
-  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html">mutate</a></span><span class="op">(</span>wind_direction<span class="op">=</span><span class="fu"><a href="https://rdrr.io/pkg/SDMTools/man/circular.averaging.html">circular.averaging</a></span><span class="op">(</span><span class="va">wind_direction</span><span class="op">)</span><span class="op">)</span> <span class="op">%&gt;%</span>
-  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html">mutate</a></span><span class="op">(</span>rainfall_event <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/factor.html">as.factor</a></span><span class="op">(</span><span class="va">rainfall_event</span><span class="op">)</span><span class="op">)</span> <span class="op">%&gt;%</span>
-  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html">mutate</a></span><span class="op">(</span>total_lesions <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/integer.html">as.integer</a></span><span class="op">(</span><span class="va">total_lesions</span><span class="op">)</span><span class="op">)</span> </code></pre></div>
+  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/summarise.html">summarise</a></span><span class="op">(</span>
+    wind_direction <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/Round.html">round</a></span><span class="op">(</span><span class="fu"><a href="../reference/circular.averaging.html">circular.averaging</a></span><span class="op">(</span><span class="va">`AVERAGE Wind Direction Degs`</span><span class="op">)</span>, <span class="fl">1</span><span class="op">)</span>,
+    total_rain <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/sum.html">sum</a></span><span class="op">(</span><span class="va">`TOTAL Rain Gauge mm`</span><span class="op">)</span>,
+    rain_duration <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/Round.html">round</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/sum.html">sum</a></span><span class="op">(</span><span class="va">rain_duration</span> <span class="op">/</span> <span class="fl">6</span><span class="op">)</span>, <span class="fl">1</span><span class="op">)</span>,
+    temp <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/Round.html">round</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/mean.html">mean</a></span><span class="op">(</span><span class="va">`AVERAGE Air Temperature DegC`</span><span class="op">)</span>, <span class="fl">1</span><span class="op">)</span>,
+    relative_humidity <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/Round.html">round</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/mean.html">mean</a></span><span class="op">(</span><span class="va">`AVERAGE Relative Humidity %`</span><span class="op">)</span>, <span class="fl">1</span><span class="op">)</span>,
+    wind_speed <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/Round.html">round</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/mean.html">mean</a></span><span class="op">(</span><span class="va">`AVERAGE Wind Speed km/h`</span><span class="op">)</span> <span class="op">*</span> <span class="fl">0.277778</span>, <span class="fl">1</span><span class="op">)</span> <span class="co"># convert to m/s</span>
+  <span class="op">)</span> <span class="op">%&gt;%</span>
+  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate-joins.html">left_join</a></span><span class="op">(</span><span class="va">lesion_data</span>, by <span class="op">=</span> <span class="st">"rainfall_event"</span><span class="op">)</span> <span class="op">%&gt;%</span>
+  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html">mutate</a></span><span class="op">(</span>rainfall_event <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/factor.html">as.factor</a></span><span class="op">(</span><span class="va">rainfall_event</span><span class="op">)</span><span class="op">)</span></code></pre></div>
+<p>Check the data.</p>
+<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="fu">kable</span><span class="op">(</span><span class="va">dat</span>,
+      format <span class="op">=</span> <span class="st">"html"</span>,
+      table.attr <span class="op">=</span> <span class="st">"class='table table-hover'"</span><span class="op">)</span></code></pre></div>
+<pre><code>## Error in kable(dat, format = "html", table.attr = "class='table table-hover'"): could not find function "kable"</code></pre>
 <p>Use <code><a href="https://rdrr.io/r/base/Random.html">set.seed()</a></code> for reproducibility purposes</p>
-<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="fu"><a href="https://rdrr.io/r/base/Random.html">set.seed</a></span><span class="op">(</span><span class="fl">42</span><span class="op">)</span></code></pre></div>
-</div>
 <div id="model_1-all-variables" class="section level3">
 <h3 class="hasAnchor">
 <a href="#model_1-all-variables" class="anchor"></a>Model_1 (All variables)</h3>
-<p>Include all variables with rainfall event as a random effect</p>
-<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
+<p>Include all variables with rainfall event as a random effect.</p>
+<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">mod1</span> <span class="op">&lt;-</span>
   <span class="fu"><a href="https://rdrr.io/pkg/glmmTMB/man/glmmTMB.html">glmmTMB</a></span><span class="op">(</span>
-    <span class="va">total_lesions</span> <span class="op">~</span>  <span class="va">total_rain</span> <span class="op">+</span> <span class="va">rain_duration</span> <span class="op">+</span> <span class="va">relative_humidity</span> <span class="op">+</span> <span class="va">temp</span> <span class="op">+</span> <span class="va">wind_speed</span> <span class="op">+</span> <span class="va">wind_direction</span> <span class="op">+</span> <span class="op">(</span><span class="fl">1</span><span class="op">|</span><span class="va">rainfall_event</span><span class="op">)</span>, family <span class="op">=</span> <span class="va">nbinom1</span>,
+    <span class="va">total_lesions</span> <span class="op">~</span> <span class="va">total_rain</span> <span class="op">+</span>
+      <span class="va">rain_duration</span> <span class="op">+</span>
+      <span class="va">relative_humidity</span> <span class="op">+</span>
+      <span class="va">temp</span> <span class="op">+</span>
+      <span class="va">wind_speed</span> <span class="op">+</span>
+      <span class="va">wind_direction</span> <span class="op">+</span>
+      <span class="op">(</span><span class="fl">1</span> <span class="op">|</span> <span class="va">rainfall_event</span><span class="op">)</span>,
+    family <span class="op">=</span> <span class="va">nbinom1</span>,
     data <span class="op">=</span> <span class="va">dat</span>
   <span class="op">)</span></code></pre></div>
 <pre><code>## Warning in (function (start, objective, gradient = NULL, hessian = NULL, : NA/
 ## NaN function evaluation</code></pre>
-<pre><code>## Warning in fitTMB(TMBStruc): Model convergence problem; non-positive-definite
-## Hessian matrix. See vignette('troubleshooting')</code></pre>
-<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="fu"><a href="https://rdrr.io/r/base/summary.html">summary</a></span><span class="op">(</span><span class="va">mod1</span><span class="op">)</span></code></pre></div>
 <pre><code>##  Family: nbinom1  ( log )
 ## Formula:          
@@ -140,41 +220,45 @@
 ## Data: dat
 ## 
 ##      AIC      BIC   logLik deviance df.resid 
-##       NA       NA       NA       NA       75 
+##    426.0    447.9   -204.0    408.0       75 
 ## 
 ## Random effects:
 ## 
 ## Conditional model:
 ##  Groups         Name        Variance  Std.Dev. 
-##  rainfall_event (Intercept) 3.631e-18 1.905e-09
+##  rainfall_event (Intercept) 5.547e-18 2.355e-09
 ## Number of obs: 84, groups:  rainfall_event, 7
 ## 
 ## Dispersion parameter for nbinom1 family (): 12.4 
 ## 
 ## Conditional model:
-##                   Estimate Std. Error z value Pr(&gt;|z|)
-## (Intercept)        5.45115        NaN     NaN      NaN
-## total_rain         1.21681        NaN     NaN      NaN
-## rain_duration     -0.68361        NaN     NaN      NaN
-## relative_humidity  0.05549        NaN     NaN      NaN
-## temp              -0.24326        NaN     NaN      NaN
-## wind_speed        -0.01685        NaN     NaN      NaN
-## wind_direction    -0.07448        NaN     NaN      NaN</code></pre>
-<p>The model summary suggest that there are not enough degrees of freedom to fit a complicated model. We can drop relative humidity and temperature because we directly transferred plants to a controlled environment with 20 degree celcius temperature and 100 % RH</p>
+##                    Estimate Std. Error z value Pr(&gt;|z|)
+## (Intercept)        5.790966        NaN     NaN      NaN
+## total_rain         1.221316        NaN     NaN      NaN
+## rain_duration     -0.694841        NaN     NaN      NaN
+## relative_humidity  0.055962        NaN     NaN      NaN
+## temp              -0.257993        NaN     NaN      NaN
+## wind_speed        -0.009763        NaN     NaN      NaN
+## wind_direction    -0.075632        NaN     NaN      NaN</code></pre>
+<p>The model summary suggest that there are not enough degrees of freedom to fit a complicated model. We can drop relative humidity and temperature because we directly transferred plants to a controlled environment with 20 degree Celsius temperature and 100 % RH</p>
 </div>
 <div id="model_2" class="section level3">
 <h3 class="hasAnchor">
 <a href="#model_2" class="anchor"></a>Model_2</h3>
 <p>Drop relative humidity and temperature</p>
-<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">mod2</span> <span class="op">&lt;-</span>
   <span class="fu"><a href="https://rdrr.io/pkg/glmmTMB/man/glmmTMB.html">glmmTMB</a></span><span class="op">(</span>
-    <span class="va">total_lesions</span> <span class="op">~</span>  <span class="va">total_rain</span> <span class="op">+</span> <span class="va">rain_duration</span> <span class="op">+</span>  <span class="va">wind_speed</span> <span class="op">+</span> <span class="va">wind_direction</span> <span class="op">+</span> <span class="op">(</span><span class="fl">1</span><span class="op">|</span><span class="va">rainfall_event</span><span class="op">)</span>, family <span class="op">=</span> <span class="va">nbinom1</span>,
+    <span class="va">total_lesions</span> <span class="op">~</span>  <span class="va">total_rain</span> <span class="op">+</span>
+      <span class="va">rain_duration</span> <span class="op">+</span>
+      <span class="va">wind_speed</span> <span class="op">+</span>
+      <span class="va">wind_direction</span> <span class="op">+</span> <span class="op">(</span><span class="fl">1</span> <span class="op">|</span> <span class="va">rainfall_event</span><span class="op">)</span>,
+    family <span class="op">=</span> <span class="va">nbinom1</span>,
     data <span class="op">=</span> <span class="va">dat</span>
   <span class="op">)</span></code></pre></div>
 <pre><code>## Warning in (function (start, objective, gradient = NULL, hessian = NULL, : NA/
 ## NaN function evaluation</code></pre>
-<div class="sourceCode" id="cb11"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="fu"><a href="https://rdrr.io/r/base/summary.html">summary</a></span><span class="op">(</span><span class="va">mod2</span><span class="op">)</span></code></pre></div>
 <pre><code>##  Family: nbinom1  ( log )
 ## Formula:          
@@ -183,24 +267,24 @@
 ## Data: dat
 ## 
 ##      AIC      BIC   logLik deviance df.resid 
-##    423.7    440.7   -204.9    409.7       77 
+##    423.7    440.8   -204.9    409.7       77 
 ## 
 ## Random effects:
 ## 
 ## Conditional model:
 ##  Groups         Name        Variance  Std.Dev. 
-##  rainfall_event (Intercept) 3.272e-10 1.809e-05
+##  rainfall_event (Intercept) 5.684e-10 2.384e-05
 ## Number of obs: 84, groups:  rainfall_event, 7
 ## 
 ## Dispersion parameter for nbinom1 family (): 12.4 
 ## 
 ## Conditional model:
 ##                Estimate Std. Error z value Pr(&gt;|z|)    
-## (Intercept)     2.79731    2.14735   1.303 0.192683    
-## total_rain      1.25025    0.25086   4.984 6.24e-07 ***
-## rain_duration  -0.58363    0.17271  -3.379 0.000727 ***
-## wind_speed      0.23146    0.52189   0.443 0.657409    
-## wind_direction -0.06194    0.01477  -4.194 2.75e-05 ***
+## (Intercept)     2.87153    2.17801   1.318  0.18736    
+## total_rain      1.25112    0.25352   4.935 8.01e-07 ***
+## rain_duration  -0.58801    0.17224  -3.414  0.00064 ***
+## wind_speed      0.21327    0.53217   0.401  0.68860    
+## wind_direction -0.06191    0.01487  -4.164 3.13e-05 ***
 ## ---
 ## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1</code></pre>
 <p>We can see that model has been successful converged. But getting a warning message</p>
@@ -209,15 +293,18 @@
 <h3 class="hasAnchor">
 <a href="#model_3" class="anchor"></a>Model_3</h3>
 <p>Remove wind speed as it is not significant</p>
-<div class="sourceCode" id="cb13"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">mod3</span> <span class="op">&lt;-</span>
   <span class="fu"><a href="https://rdrr.io/pkg/glmmTMB/man/glmmTMB.html">glmmTMB</a></span><span class="op">(</span>
-    <span class="va">total_lesions</span> <span class="op">~</span>  <span class="va">total_rain</span> <span class="op">+</span> <span class="va">rain_duration</span>  <span class="op">+</span> <span class="va">wind_direction</span> <span class="op">+</span> <span class="op">(</span><span class="fl">1</span><span class="op">|</span><span class="va">rainfall_event</span><span class="op">)</span>, family <span class="op">=</span> <span class="va">nbinom1</span>,
+    <span class="va">total_lesions</span> <span class="op">~</span>  <span class="va">total_rain</span> <span class="op">+</span>
+      <span class="va">rain_duration</span> <span class="op">+</span>
+      <span class="va">wind_direction</span> <span class="op">+</span> <span class="op">(</span><span class="fl">1</span> <span class="op">|</span> <span class="va">rainfall_event</span><span class="op">)</span>,
+    family <span class="op">=</span> <span class="va">nbinom1</span>,
     data <span class="op">=</span> <span class="va">dat</span>
   <span class="op">)</span></code></pre></div>
 <pre><code>## Warning in (function (start, objective, gradient = NULL, hessian = NULL, : NA/
 ## NaN function evaluation</code></pre>
-<div class="sourceCode" id="cb15"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb17"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="fu"><a href="https://rdrr.io/r/base/summary.html">summary</a></span><span class="op">(</span><span class="va">mod3</span><span class="op">)</span></code></pre></div>
 <pre><code>##  Family: nbinom1  ( log )
 ## Formula:          
@@ -232,17 +319,17 @@
 ## 
 ## Conditional model:
 ##  Groups         Name        Variance  Std.Dev. 
-##  rainfall_event (Intercept) 3.908e-10 1.977e-05
+##  rainfall_event (Intercept) 4.131e-10 2.032e-05
 ## Number of obs: 84, groups:  rainfall_event, 7
 ## 
 ## Dispersion parameter for nbinom1 family (): 12.4 
 ## 
 ## Conditional model:
 ##                Estimate Std. Error z value Pr(&gt;|z|)    
-## (Intercept)     3.69530    0.77295   4.781 1.75e-06 ***
-## total_rain      1.22102    0.22986   5.312 1.08e-07 ***
-## rain_duration  -0.61149    0.16364  -3.737 0.000186 ***
-## wind_direction -0.06006    0.01340  -4.483 7.36e-06 ***
+## (Intercept)     3.69821    0.77355   4.781 1.75e-06 ***
+## total_rain      1.22252    0.23032   5.308 1.11e-07 ***
+## rain_duration  -0.61273    0.16398  -3.737 0.000186 ***
+## wind_direction -0.06013    0.01342  -4.481 7.42e-06 ***
 ## ---
 ## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1</code></pre>
 <p>Again getting a warning message. And the negative impact of increasing rain duration and wind direction does not make any biological sense</p>
@@ -251,10 +338,15 @@
 <h3 class="hasAnchor">
 <a href="#model_4" class="anchor"></a>Model_4</h3>
 <p>Replace wind direction with wind speed if the warning message could be removed</p>
-<div class="sourceCode" id="cb17"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb19"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">mod4</span> <span class="op">&lt;-</span>
   <span class="fu"><a href="https://rdrr.io/pkg/glmmTMB/man/glmmTMB.html">glmmTMB</a></span><span class="op">(</span>
-    <span class="va">total_lesions</span> <span class="op">~</span>  <span class="va">total_rain</span> <span class="op">+</span> <span class="va">rain_duration</span>  <span class="op">+</span> <span class="va">wind_speed</span> <span class="op">+</span> <span class="op">(</span><span class="fl">1</span><span class="op">|</span><span class="va">rainfall_event</span><span class="op">)</span>, family <span class="op">=</span> <span class="va">nbinom1</span>,
+    <span class="va">total_lesions</span> <span class="op">~</span>
+      <span class="va">total_rain</span> <span class="op">+</span>
+      <span class="va">rain_duration</span> <span class="op">+</span>
+      <span class="va">wind_speed</span> <span class="op">+</span>
+      <span class="op">(</span><span class="fl">1</span> <span class="op">|</span> <span class="va">rainfall_event</span><span class="op">)</span>,
+    family <span class="op">=</span> <span class="va">nbinom1</span>,
     data <span class="op">=</span> <span class="va">dat</span>
   <span class="op">)</span>
 
@@ -272,20 +364,21 @@
 ## 
 ## Conditional model:
 ##  Groups         Name        Variance Std.Dev.
-##  rainfall_event (Intercept) 0.3831   0.6189  
+##  rainfall_event (Intercept) 0.3794   0.616   
 ## Number of obs: 84, groups:  rainfall_event, 7
 ## 
 ## Dispersion parameter for nbinom1 family (): 13.6 
 ## 
 ## Conditional model:
 ##               Estimate Std. Error z value Pr(&gt;|z|)  
-## (Intercept)    3.64859    4.25615   0.857   0.3913  
-## total_rain     0.17941    0.08873   2.022   0.0432 *
-## rain_duration  0.06674    0.27752   0.240   0.8100  
-## wind_speed    -0.86102    0.95663  -0.900   0.3681  
+## (Intercept)    3.77220    4.27811   0.882   0.3779  
+## total_rain     0.17733    0.08854   2.003   0.0452 *
+## rain_duration  0.06054    0.27810   0.218   0.8277  
+## wind_speed    -0.88854    0.96164  -0.924   0.3555  
 ## ---
 ## Signif. codes:  0 '***' 0.001 '**' 0.01 '*' 0.05 '.' 0.1 ' ' 1</code></pre>
-<p>The warning message has gone now. The reason is that wind direction did not vary much during different rainfall events, whereas wind speed varied. We can go with <code>mod4</code></p>
+<p>The warning message has gone now. The reason is that wind direction did not vary much during different rainfall events, whereas wind speed varied. We can go with <code>mod4</code>.</p>
+</div>
 </div>
 <div id="best-fit-model-mod4-diagnostics" class="section level2">
 <h2 class="hasAnchor">
@@ -293,97 +386,167 @@
 <div id="check-over-dispersion" class="section level3">
 <h3 class="hasAnchor">
 <a href="#check-over-dispersion" class="anchor"></a>Check over-dispersion</h3>
-<p>Check for over-dispersion using custom function created by Ben Bolker. Here is the <a href="http://bbolker.github.io/mixedmodels-misc/glmmFAQ.html#overdispersion">link</a></p>
-<div class="sourceCode" id="cb19"><pre class="downlit sourceCode r">
+<p>Check for over-dispersion using custom function created by Ben Bolker. Here is the <a href="http://bbolker.github.io/mixedmodels-misc/glmmFAQ.html#overdispersion">link</a>.</p>
+<div class="sourceCode" id="cb21"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="va">overdisp_fun</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">model</span><span class="op">)</span> <span class="op">{</span>
-    <span class="va">rdf</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/df.residual.html">df.residual</a></span><span class="op">(</span><span class="va">model</span><span class="op">)</span>
-    <span class="va">rp</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/residuals.html">residuals</a></span><span class="op">(</span><span class="va">model</span>,type<span class="op">=</span><span class="st">"pearson"</span><span class="op">)</span>
-    <span class="va">Pearson.chisq</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/sum.html">sum</a></span><span class="op">(</span><span class="va">rp</span><span class="op">^</span><span class="fl">2</span><span class="op">)</span>
-    <span class="va">prat</span> <span class="op">&lt;-</span> <span class="va">Pearson.chisq</span><span class="op">/</span><span class="va">rdf</span>
-    <span class="va">pval</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/Chisquare.html">pchisq</a></span><span class="op">(</span><span class="va">Pearson.chisq</span>, df<span class="op">=</span><span class="va">rdf</span>, lower.tail<span class="op">=</span><span class="cn">FALSE</span><span class="op">)</span>
-    <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span>chisq<span class="op">=</span><span class="va">Pearson.chisq</span>,ratio<span class="op">=</span><span class="va">prat</span>,rdf<span class="op">=</span><span class="va">rdf</span>,p<span class="op">=</span><span class="va">pval</span><span class="op">)</span>
+  <span class="va">rdf</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/df.residual.html">df.residual</a></span><span class="op">(</span><span class="va">model</span><span class="op">)</span>
+  <span class="va">rp</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/residuals.html">residuals</a></span><span class="op">(</span><span class="va">model</span>, type <span class="op">=</span> <span class="st">"pearson"</span><span class="op">)</span>
+  <span class="va">Pearson.chisq</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/sum.html">sum</a></span><span class="op">(</span><span class="va">rp</span> <span class="op">^</span> <span class="fl">2</span><span class="op">)</span>
+  <span class="va">prat</span> <span class="op">&lt;-</span> <span class="va">Pearson.chisq</span> <span class="op">/</span> <span class="va">rdf</span>
+  <span class="va">pval</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/Chisquare.html">pchisq</a></span><span class="op">(</span><span class="va">Pearson.chisq</span>, df <span class="op">=</span> <span class="va">rdf</span>, lower.tail <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span>
+  <span class="fu"><a href="https://rdrr.io/r/base/c.html">c</a></span><span class="op">(</span>
+    chisq <span class="op">=</span> <span class="va">Pearson.chisq</span>,
+    ratio <span class="op">=</span> <span class="va">prat</span>,
+    rdf <span class="op">=</span> <span class="va">rdf</span>,
+    p <span class="op">=</span> <span class="va">pval</span>
+  <span class="op">)</span>
 <span class="op">}</span>
 <span class="fu">overdisp_fun</span><span class="op">(</span><span class="va">mod4</span><span class="op">)</span></code></pre></div>
-<pre><code>## Warning in TMB::openmp(parallel): OpenMP not supported.</code></pre>
-<pre><code>## Warning in TMB::openmp(n = n_orig): OpenMP not supported.</code></pre>
-<pre><code>## Warning in TMB::openmp(parallel): OpenMP not supported.</code></pre>
-<pre><code>## Warning in TMB::openmp(n = n_orig): OpenMP not supported.</code></pre>
 <pre><code>##      chisq      ratio        rdf          p 
-## 48.7848259  0.6254465 78.0000000  0.9961281</code></pre>
-<p>The larger <code>p value</code> shows that there is no significant over-dispersion</p>
+## 48.8352552  0.6260930 78.0000000  0.9960638</code></pre>
+<p>The larger <code>p value</code> shows that there is no significant over-dispersion.</p>
 </div>
 <div id="simulate-residuals" class="section level3">
 <h3 class="hasAnchor">
 <a href="#simulate-residuals" class="anchor"></a>Simulate residuals</h3>
-<div class="sourceCode" id="cb25"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="fu"><a href="https://rdrr.io/pkg/DHARMa/man/simulateResiduals.html">simulateResiduals</a></span><span class="op">(</span><span class="va">mod4</span>, plot <span class="op">=</span> <span class="cn">T</span>, quantreg<span class="op">=</span><span class="cn">T</span><span class="op">)</span></code></pre></div>
-<pre><code>## Warning in TMB::openmp(parallel): OpenMP not supported.</code></pre>
-<pre><code>## Warning in TMB::openmp(n = n_orig): OpenMP not supported.</code></pre>
-<pre><code>## Warning in TMB::openmp(parallel): OpenMP not supported.</code></pre>
-<pre><code>## Warning in TMB::openmp(n = n_orig): OpenMP not supported.</code></pre>
+<div class="sourceCode" id="cb23"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="fu"><a href="https://rdrr.io/pkg/DHARMa/man/simulateResiduals.html">simulateResiduals</a></span><span class="op">(</span><span class="va">mod4</span>, plot <span class="op">=</span> <span class="cn">T</span>, quantreg <span class="op">=</span> <span class="cn">T</span><span class="op">)</span></code></pre></div>
 <p><img src="a01_Fit_GLMMs_files/figure-html/simulate-residuals-1.png" width="672" style="display: block; margin: auto;"></p>
 <pre><code>## Object of Class DHARMa with simulated residuals based on 250 simulations with refit = FALSE . See ?DHARMa::simulateResiduals for help. 
 ##  
-## Scaled residual values: 0.6927872 0.7510566 0.6896901 0.7363081 0.5366913 0.0510442 0.3992562 0.7071509 0.2186215 0.3517035 0.01424899 0.1319637 0.7587712 0.8268785 0.8587292 0.4821805 0.6704474 0.8635588 0.3363587 0.6248903 ...</code></pre>
+## Scaled residual values: 0.02734823 0.8010679 0.3530158 0.8112905 0.2689484 0.6919764 0.3306609 0.4959772 0.1051955 0.2615026 0.4790774 0.5486829 0.8133635 0.8478606 0.8395191 0.3517644 0.6036274 0.8738153 0.02767958 0.6416688 ...</code></pre>
 <p>Very close observed and predicted values</p>
 </div>
 <div id="check-zero-inflation" class="section level3">
 <h3 class="hasAnchor">
 <a href="#check-zero-inflation" class="anchor"></a>Check zero-inflation</h3>
-<div class="sourceCode" id="cb31"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb25"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="fu"><a href="https://rdrr.io/pkg/DHARMa/man/testZeroInflation.html">testZeroInflation</a></span><span class="op">(</span><span class="va">mod4</span><span class="op">)</span></code></pre></div>
-<pre><code>## Warning in TMB::openmp(parallel): OpenMP not supported.</code></pre>
-<pre><code>## Warning in TMB::openmp(n = n_orig): OpenMP not supported.</code></pre>
-<pre><code>## Warning in TMB::openmp(parallel): OpenMP not supported.</code></pre>
-<pre><code>## Warning in TMB::openmp(n = n_orig): OpenMP not supported.</code></pre>
 <p><img src="a01_Fit_GLMMs_files/figure-html/check-zero-inflation-1.png" width="672" style="display: block; margin: auto;"></p>
 <pre><code>## 
 ##  DHARMa zero-inflation test via comparison to expected zeros with
 ##  simulation under H0 = fitted model
 ## 
 ## data:  simulationOutput
-## ratioObsSim = 1.0184, p-value = 1
+## ratioObsSim = 0.99767, p-value = 1
 ## alternative hypothesis: two.sided</code></pre>
 <p>No zero inflation detected</p>
 </div>
 <div id="check-overall-performance" class="section level3">
 <h3 class="hasAnchor">
 <a href="#check-overall-performance" class="anchor"></a>Check overall performance</h3>
-<div class="sourceCode" id="cb37"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="fu">performance</span><span class="fu">::</span><span class="fu">check_model</span><span class="op">(</span><span class="va">mod4</span>, panel <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></code></pre></div>
-<pre><code>## Error in loadNamespace(x): there is no package called 'performance'</code></pre>
-<p>The model fit non-linear model data distribution assumption, close observed vs. fitted values and there is no significant collinearity between predictors</p>
+<div class="sourceCode" id="cb27"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="fu">performance</span><span class="fu">::</span><span class="fu"><a href="https://easystats.github.io/performance/reference/check_model.html">check_model</a></span><span class="op">(</span><span class="va">mod4</span>, panel <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></code></pre></div>
+<p><img src="a01_Fit_GLMMs_files/figure-html/over-all-performance%20check-1.png" width="672" style="display: block; margin: auto;"><img src="a01_Fit_GLMMs_files/figure-html/over-all-performance%20check-2.png" width="672" style="display: block; margin: auto;"><img src="a01_Fit_GLMMs_files/figure-html/over-all-performance%20check-3.png" width="672" style="display: block; margin: auto;"><img src="a01_Fit_GLMMs_files/figure-html/over-all-performance%20check-4.png" width="672" style="display: block; margin: auto;"></p>
+<p>The model fit non-linear model data distribution assumption, close observed vs. fitted values and there is no significant collinearity between predictors.</p>
 </div>
 </div>
 <div id="plot-best-fit-model" class="section level2">
 <h2 class="hasAnchor">
 <a href="#plot-best-fit-model" class="anchor"></a>Plot best fit model</h2>
-<div class="sourceCode" id="cb39"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="va">f1</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://strengejacke.github.io/ggeffects/reference/plot.html">plot</a></span><span class="op">(</span><span class="fu"><a href="https://strengejacke.github.io/ggeffects/reference/ggpredict.html">ggpredict</a></span><span class="op">(</span><span class="va">mod4</span>, <span class="st">"total_rain"</span><span class="op">)</span><span class="op">)</span></code></pre></div>
-<pre><code>## Warning in TMB::openmp(parallel): OpenMP not supported.</code></pre>
-<pre><code>## Warning in TMB::openmp(n = n_orig): OpenMP not supported.</code></pre>
-<div class="sourceCode" id="cb42"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="va">f2</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://strengejacke.github.io/ggeffects/reference/plot.html">plot</a></span><span class="op">(</span><span class="fu"><a href="https://strengejacke.github.io/ggeffects/reference/ggpredict.html">ggpredict</a></span><span class="op">(</span><span class="va">mod4</span> , <span class="st">"rain_duration"</span><span class="op">)</span><span class="op">)</span></code></pre></div>
-<pre><code>## Warning in TMB::openmp(parallel): OpenMP not supported.
-
-## Warning in TMB::openmp(parallel): OpenMP not supported.</code></pre>
-<div class="sourceCode" id="cb44"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="va">f3</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://strengejacke.github.io/ggeffects/reference/plot.html">plot</a></span><span class="op">(</span><span class="fu"><a href="https://strengejacke.github.io/ggeffects/reference/ggpredict.html">ggpredict</a></span><span class="op">(</span><span class="va">mod4</span>, <span class="st">"wind_speed"</span><span class="op">)</span><span class="op">)</span></code></pre></div>
-<pre><code>## Warning in TMB::openmp(parallel): OpenMP not supported.
-
-## Warning in TMB::openmp(parallel): OpenMP not supported.</code></pre>
-<div class="sourceCode" id="cb46"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span class="va">fig_5</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/gridExtra/man/arrangeGrob.html">grid.arrange</a></span><span class="op">(</span><span class="va">f1</span>, <span class="va">f2</span>, <span class="va">f3</span><span class="op">)</span></code></pre></div>
-<p><img src="a01_Fit_GLMMs_files/figure-html/unnamed-chunk-2-1.png" width="672" style="display: block; margin: auto;"></p>
-<div class="sourceCode" id="cb47"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb28"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="va">f1</span> <span class="op">&lt;-</span>
+  <span class="fu"><a href="https://strengejacke.github.io/ggeffects/reference/plot.html">plot</a></span><span class="op">(</span><span class="fu"><a href="https://strengejacke.github.io/ggeffects/reference/ggpredict.html">ggpredict</a></span><span class="op">(</span><span class="va">mod4</span>, <span class="st">"total_rain"</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span> 
+  <span class="fu"><a href="https://rpkgs.datanovia.com/ggpubr/reference/theme_pubr.html">theme_pubclean</a></span><span class="op">(</span>base_family <span class="op">=</span> <span class="st">"Arial"</span>, base_size <span class="op">=</span> <span class="fl">15</span><span class="op">)</span>
+<span class="va">f2</span> <span class="op">&lt;-</span>
+  <span class="fu"><a href="https://strengejacke.github.io/ggeffects/reference/plot.html">plot</a></span><span class="op">(</span><span class="fu"><a href="https://strengejacke.github.io/ggeffects/reference/ggpredict.html">ggpredict</a></span><span class="op">(</span><span class="va">mod4</span> , <span class="st">"rain_duration"</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span> 
+  <span class="fu"><a href="https://rpkgs.datanovia.com/ggpubr/reference/theme_pubr.html">theme_pubclean</a></span><span class="op">(</span>base_family <span class="op">=</span> <span class="st">"Arial"</span>, base_size <span class="op">=</span> <span class="fl">15</span><span class="op">)</span>
+<span class="va">f3</span> <span class="op">&lt;-</span>
+  <span class="fu"><a href="https://strengejacke.github.io/ggeffects/reference/plot.html">plot</a></span><span class="op">(</span><span class="fu"><a href="https://strengejacke.github.io/ggeffects/reference/ggpredict.html">ggpredict</a></span><span class="op">(</span><span class="va">mod4</span>, <span class="st">"wind_speed"</span><span class="op">)</span><span class="op">)</span> <span class="op">+</span> 
+  <span class="fu"><a href="https://rpkgs.datanovia.com/ggpubr/reference/theme_pubr.html">theme_pubclean</a></span><span class="op">(</span>base_family <span class="op">=</span> <span class="st">"Arial"</span>, base_size <span class="op">=</span> <span class="fl">15</span><span class="op">)</span>
+<span class="va">fig_4</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/pkg/gridExtra/man/arrangeGrob.html">grid.arrange</a></span><span class="op">(</span><span class="va">f1</span>, <span class="va">f2</span>, <span class="va">f3</span><span class="op">)</span></code></pre></div>
+<p><img src="a01_Fit_GLMMs_files/figure-html/best-fit-plot-1.png" width="672" style="display: block; margin: auto;"></p>
+<div class="sourceCode" id="cb29"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="va">fig_4</span></code></pre></div>
+<pre><code>## TableGrob (3 x 1) "arrange": 3 grobs
+##   z     cells    name           grob
+## 1 1 (1-1,1-1) arrange gtable[layout]
+## 2 2 (2-2,1-1) arrange gtable[layout]
+## 3 3 (3-3,1-1) arrange gtable[layout]</code></pre>
+<div class="sourceCode" id="cb31"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="fu">ggsave</span><span class="op">(</span>
-   <span class="fu"><a href="https://here.r-lib.org//reference/here.html">here</a></span><span class="op">(</span><span class="st">"man"</span>, <span class="st">"figures/fig_5.png"</span><span class="op">)</span>,
-   plot <span class="op">=</span> <span class="va">fig_5</span>,
+   <span class="fu"><a href="https://here.r-lib.org//reference/here.html">here</a></span><span class="op">(</span><span class="st">"man"</span>, <span class="st">"figures/fig_4.png"</span><span class="op">)</span>,
+   plot <span class="op">=</span> <span class="va">fig_4</span>,
    width <span class="op">=</span> <span class="fl">9</span>,
    height <span class="op">=</span> <span class="fl">9</span>,
    units <span class="op">=</span> <span class="st">"in"</span>,
    dpi <span class="op">=</span> <span class="fl">600</span>
+<span class="op">)</span>
+
+<span class="fu">ggsave</span><span class="op">(</span>
+   <span class="fu"><a href="https://here.r-lib.org//reference/here.html">here</a></span><span class="op">(</span><span class="st">"man"</span>, <span class="st">"figures/fig_4.eps"</span><span class="op">)</span>,
+   plot <span class="op">=</span> <span class="va">fig_4</span>,
+   width <span class="op">=</span> <span class="fl">9</span>,
+   height <span class="op">=</span> <span class="fl">9</span>,
+   units <span class="op">=</span> <span class="st">"in"</span>,
+   device <span class="op">=</span>  <span class="va">cairo_ps</span>
 <span class="op">)</span></code></pre></div>
+</div>
+<div id="colophon" class="section level2">
+<h2 class="hasAnchor">
+<a href="#colophon" class="anchor"></a>Colophon</h2>
+<div class="sourceCode" id="cb32"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span class="fu"><a href="https://rdrr.io/r/utils/sessionInfo.html">sessionInfo</a></span><span class="op">(</span><span class="op">)</span></code></pre></div>
+<pre><code>## R version 4.1.0 (2021-05-18)
+## Platform: aarch64-apple-darwin20 (64-bit)
+## Running under: macOS Big Sur 11.4
+## 
+## Matrix products: default
+## BLAS:   /Library/Frameworks/R.framework/Versions/4.1-arm64/Resources/lib/libRblas.dylib
+## LAPACK: /Library/Frameworks/R.framework/Versions/4.1-arm64/Resources/lib/libRlapack.dylib
+## 
+## locale:
+## [1] en_AU.UTF-8/en_AU.UTF-8/en_AU.UTF-8/C/en_AU.UTF-8/en_AU.UTF-8
+## 
+## attached base packages:
+## [1] stats     graphics  grDevices utils     datasets  methods   base     
+## 
+## other attached packages:
+##  [1] ggpubr_0.4.0     lubridate_1.7.10 rainy_0.0.0.9000 gridExtra_2.3   
+##  [5] here_1.0.1       ggeffects_1.1.0  DHARMa_0.4.3     glmmTMB_1.1.1   
+##  [9] forcats_0.5.1    stringr_1.4.0    dplyr_1.0.7      purrr_0.3.4     
+## [13] readr_1.4.0      tidyr_1.1.3      tibble_3.1.2     ggplot2_3.3.5   
+## [17] tidyverse_1.3.1  readxl_1.3.1    
+## 
+## loaded via a namespace (and not attached):
+##   [1] TH.data_1.0-10      minqa_1.2.4         colorspace_2.0-2   
+##   [4] ggsignif_0.6.2      ggridges_0.5.3      ellipsis_0.3.2     
+##   [7] rio_0.5.27          sjlabelled_1.1.8    rprojroot_2.0.2    
+##  [10] snakecase_0.11.0    estimability_1.3    parameters_0.14.0  
+##  [13] fs_1.5.0            rstudioapi_0.13     farver_2.1.0       
+##  [16] fansi_0.5.0         mvtnorm_1.1-2       xml2_1.3.2         
+##  [19] codetools_0.2-18    splines_4.1.0       robustbase_0.93-8  
+##  [22] cachem_1.0.5        knitr_1.33          jsonlite_1.7.2     
+##  [25] nloptr_1.2.2.2      broom_0.7.8         dbplyr_2.1.1       
+##  [28] effectsize_0.4.5    compiler_4.1.0      httr_1.4.2         
+##  [31] emmeans_1.6.2-1     backports_1.2.1     assertthat_0.2.1   
+##  [34] Matrix_1.3-4        fastmap_1.1.0       cli_3.0.0.9000     
+##  [37] htmltools_0.5.1.1   tools_4.1.0         coda_0.19-4        
+##  [40] gtable_0.3.0        glue_1.4.2          Rcpp_1.0.7         
+##  [43] carData_3.0-4       cellranger_1.1.0    jquerylib_0.1.4    
+##  [46] pkgdown_1.6.1       vctrs_0.3.8         nlme_3.1-152       
+##  [49] iterators_1.0.13    insight_0.14.2      xfun_0.24          
+##  [52] openxlsx_4.2.4      lme4_1.1-27.1       rvest_1.0.0        
+##  [55] lifecycle_1.0.0     rstatix_0.7.0       DEoptimR_1.0-9     
+##  [58] MASS_7.3-54         zoo_1.8-9           scales_1.1.1       
+##  [61] ragg_1.1.3          hms_1.1.0           sandwich_3.0-1     
+##  [64] qqplotr_0.0.5       TMB_1.7.20          yaml_2.2.1         
+##  [67] curl_4.3.2          see_0.6.4           memoise_2.0.0      
+##  [70] sass_0.4.0.9000     stringi_1.6.2       bayestestR_0.10.0  
+##  [73] highr_0.9           desc_1.3.0          gap_1.2.3-1        
+##  [76] foreach_1.5.1       zip_2.2.0           boot_1.3-28        
+##  [79] rlang_0.4.11        pkgconfig_2.0.3     systemfonts_1.0.2  
+##  [82] evaluate_0.14       lattice_0.20-44     labeling_0.4.2     
+##  [85] tidyselect_1.1.1    plyr_1.8.6          magrittr_2.0.1     
+##  [88] R6_2.5.0            generics_0.1.0      multcomp_1.4-17    
+##  [91] DBI_1.1.1           mgcv_1.8-36         foreign_0.8-81     
+##  [94] pillar_1.6.1        haven_2.4.1         withr_2.4.2        
+##  [97] abind_1.4-5         survival_3.2-11     performance_0.7.2  
+## [100] modelr_0.1.8        crayon_1.4.1        car_3.0-11         
+## [103] utf8_1.2.1          rmarkdown_2.9       grid_4.1.0         
+## [106] data.table_1.14.0   reprex_2.0.0        digest_0.6.27      
+## [109] xtable_1.8-4        numDeriv_2016.8-1.1 textshaping_0.3.5  
+## [112] munsell_0.5.0       bslib_0.2.5.1</code></pre>
 </div>
   </div>
 
