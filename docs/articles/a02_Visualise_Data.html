@@ -54,13 +54,13 @@
   </a>
   <ul class="dropdown-menu" role="menu">
 <li>
-      <a href="../articles/a01_Calculate_Exposure_Times.html">Calculate exposure times</a>
+      <a href="../articles/a01_Fit_GLMMs.html">Fit GLMMs</a>
     </li>
     <li>
       <a href="../articles/a02_Visualise_Data.html">Data visualisation</a>
     </li>
     <li>
-      <a href="../articles/a03_Fit_GLMMs.html">Fit GLMMs</a>
+      <a href="../articles/a03_Calculate_Exposure_Times.html">Calculate exposure times</a>
     </li>
   </ul>
 </li>
@@ -134,7 +134,7 @@
                names_to <span class="op">=</span> <span class="st">"plant"</span>,
                values_to <span class="op">=</span> <span class="st">"lesions"</span><span class="op">)</span> <span class="op">%&gt;%</span> 
   <span class="fu"><a href="https://dplyr.tidyverse.org/reference/group_by.html">group_by</a></span><span class="op">(</span><span class="va">rainfall_event</span>, <span class="va">pot</span><span class="op">)</span> <span class="op">%&gt;%</span> 
-  <span class="fu">summarise</span><span class="op">(</span>total_lesions <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/sum.html">sum</a></span><span class="op">(</span><span class="va">lesions</span>, na.rm <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span>,
+  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/summarise.html">summarise</a></span><span class="op">(</span>total_lesions <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/sum.html">sum</a></span><span class="op">(</span><span class="va">lesions</span>, na.rm <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span>,
          mean_lesions <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/Round.html">round</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/mean.html">mean</a></span><span class="op">(</span><span class="va">lesions</span><span class="op">)</span>, <span class="fl">1</span><span class="op">)</span><span class="op">)</span></code></pre></div>
 </div>
 <div id="create-object-for-analysis" class="section level2">
@@ -157,7 +157,7 @@
   <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html">mutate</a></span><span class="op">(</span>
     Date_time <span class="op">=</span> <span class="fu"><a href="http://lubridate.tidyverse.org/reference/round_date.html">round_date</a></span><span class="op">(</span><span class="fu"><a href="http://lubridate.tidyverse.org/reference/ymd_hms.html">dmy_hms</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/paste.html">paste</a></span><span class="op">(</span><span class="va">Date</span>, <span class="va">Time</span><span class="op">)</span><span class="op">)</span>, <span class="st">"minute"</span><span class="op">)</span>,
     rain_duration <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/integer.html">as.integer</a></span><span class="op">(</span><span class="va">`TOTAL Rain Gauge mm`</span> <span class="op">&gt;</span> <span class="fl">0</span><span class="op">)</span>,
-    rainfall_event <span class="op">=</span> <span class="fu">case_when</span><span class="op">(</span>
+    rainfall_event <span class="op">=</span> <span class="fu"><a href="https://dplyr.tidyverse.org/reference/case_when.html">case_when</a></span><span class="op">(</span>
       <span class="va">Date_time</span> <span class="op">%within%</span> <span class="va">event_data</span><span class="op">[</span><span class="fl">1</span>, <span class="st">"exposed"</span><span class="op">]</span> <span class="op">~</span> <span class="fl">1</span>,
       <span class="va">Date_time</span> <span class="op">%within%</span> <span class="va">event_data</span><span class="op">[</span><span class="fl">2</span>, <span class="st">"exposed"</span><span class="op">]</span> <span class="op">~</span> <span class="fl">2</span>,
       <span class="va">Date_time</span> <span class="op">%within%</span> <span class="va">event_data</span><span class="op">[</span><span class="fl">3</span>, <span class="st">"exposed"</span><span class="op">]</span> <span class="op">~</span> <span class="fl">3</span>,
@@ -167,7 +167,7 @@
       <span class="va">Date_time</span> <span class="op">%within%</span> <span class="va">event_data</span><span class="op">[</span><span class="fl">7</span>, <span class="st">"exposed"</span><span class="op">]</span> <span class="op">~</span> <span class="fl">7</span>
     <span class="op">)</span>
   <span class="op">)</span> <span class="op">%&gt;%</span>
-  <span class="fu"><a href="https://rdrr.io/r/stats/filter.html">filter</a></span><span class="op">(</span>
+  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/filter.html">filter</a></span><span class="op">(</span>
     <span class="va">Date_time</span> <span class="op">%within%</span> <span class="va">event_data</span><span class="op">[</span><span class="fl">1</span>, <span class="st">"exposed"</span><span class="op">]</span> <span class="op">|</span>
       <span class="va">Date_time</span> <span class="op">%within%</span> <span class="va">event_data</span><span class="op">[</span><span class="fl">2</span>, <span class="st">"exposed"</span><span class="op">]</span> <span class="op">|</span>
       <span class="va">Date_time</span> <span class="op">%within%</span> <span class="va">event_data</span><span class="op">[</span><span class="fl">3</span>, <span class="st">"exposed"</span><span class="op">]</span> <span class="op">|</span>
@@ -177,7 +177,7 @@
       <span class="va">Date_time</span> <span class="op">%within%</span> <span class="va">event_data</span><span class="op">[</span><span class="fl">7</span>, <span class="st">"exposed"</span><span class="op">]</span>
   <span class="op">)</span> <span class="op">%&gt;%</span>
   <span class="fu"><a href="https://dplyr.tidyverse.org/reference/group_by.html">group_by</a></span><span class="op">(</span><span class="va">rainfall_event</span><span class="op">)</span> <span class="op">%&gt;%</span>
-  <span class="fu">summarise</span><span class="op">(</span>
+  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/summarise.html">summarise</a></span><span class="op">(</span>
     wind_direction <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/Round.html">round</a></span><span class="op">(</span><span class="fu"><a href="../reference/circular.averaging.html">circular.averaging</a></span><span class="op">(</span><span class="va">`AVERAGE Wind Direction Degs`</span><span class="op">)</span>, <span class="fl">1</span><span class="op">)</span>,
     total_rain <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/sum.html">sum</a></span><span class="op">(</span><span class="va">`TOTAL Rain Gauge mm`</span><span class="op">)</span>,
     rain_duration <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/Round.html">round</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/sum.html">sum</a></span><span class="op">(</span><span class="va">rain_duration</span> <span class="op">/</span> <span class="fl">6</span><span class="op">)</span>, <span class="fl">1</span><span class="op">)</span>,
@@ -185,7 +185,7 @@
     relative_humidity <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/Round.html">round</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/mean.html">mean</a></span><span class="op">(</span><span class="va">`AVERAGE Relative Humidity %`</span><span class="op">)</span>, <span class="fl">1</span><span class="op">)</span>,
     wind_speed <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/Round.html">round</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/mean.html">mean</a></span><span class="op">(</span><span class="va">`AVERAGE Wind Speed km/h`</span><span class="op">)</span> <span class="op">*</span> <span class="fl">0.277778</span>, <span class="fl">1</span><span class="op">)</span> <span class="co"># convert to m/s</span>
   <span class="op">)</span> <span class="op">%&gt;%</span>
-  <span class="fu">left_join</span><span class="op">(</span><span class="va">lesion_data</span>, by <span class="op">=</span> <span class="st">"rainfall_event"</span><span class="op">)</span> <span class="op">%&gt;%</span>
+  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate-joins.html">left_join</a></span><span class="op">(</span><span class="va">lesion_data</span>, by <span class="op">=</span> <span class="st">"rainfall_event"</span><span class="op">)</span> <span class="op">%&gt;%</span>
   <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html">mutate</a></span><span class="op">(</span>
     rainfall_event <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/factor.html">as.factor</a></span><span class="op">(</span><span class="va">rainfall_event</span><span class="op">)</span><span class="op">)</span></code></pre></div>
 <pre><code>## 
@@ -2959,7 +2959,7 @@ NA
 <code class="sourceCode R"><span class="va">dat</span> <span class="op">%&gt;%</span>
   <span class="fu"><a href="https://dplyr.tidyverse.org/reference/group_by.html">group_by</a></span><span class="op">(</span><span class="va">rainfall_event</span><span class="op">)</span> <span class="op">%&gt;%</span>
   <span class="fu"><a href="https://dplyr.tidyverse.org/reference/mutate.html">mutate</a></span><span class="op">(</span>total_lesions <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/sum.html">sum</a></span><span class="op">(</span><span class="va">total_lesions</span>, na.rm <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span><span class="op">)</span> <span class="op">%&gt;%</span>
-  <span class="fu">ungroup</span><span class="op">(</span><span class="op">)</span> <span class="op">%&gt;%</span>
+  <span class="fu"><a href="https://dplyr.tidyverse.org/reference/group_by.html">ungroup</a></span><span class="op">(</span><span class="op">)</span> <span class="op">%&gt;%</span>
   <span class="fu">ggplot</span><span class="op">(</span><span class="fu">aes</span><span class="op">(</span>
     x <span class="op">=</span> <span class="va">total_rain</span>,
     y <span class="op">=</span> <span class="va">wind_speed</span>,
@@ -3079,12 +3079,12 @@ NA
 <div class="sourceCode" id="cb12"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span class="fu"><a href="https://rdrr.io/r/utils/sessionInfo.html">sessionInfo</a></span><span class="op">(</span><span class="op">)</span></code></pre></div>
 <pre><code>## R version 4.1.0 (2021-05-18)
-## Platform: x86_64-apple-darwin17.0 (64-bit)
-## Running under: macOS Catalina 10.15.6
+## Platform: aarch64-apple-darwin20 (64-bit)
+## Running under: macOS Big Sur 11.4
 ## 
 ## Matrix products: default
-## BLAS:   /Library/Frameworks/R.framework/Versions/4.1/Resources/lib/libRblas.dylib
-## LAPACK: /Library/Frameworks/R.framework/Versions/4.1/Resources/lib/libRlapack.dylib
+## BLAS:   /Library/Frameworks/R.framework/Versions/4.1-arm64/Resources/lib/libRblas.dylib
+## LAPACK: /Library/Frameworks/R.framework/Versions/4.1-arm64/Resources/lib/libRlapack.dylib
 ## 
 ## locale:
 ## [1] en_AU.UTF-8/en_AU.UTF-8/en_AU.UTF-8/C/en_AU.UTF-8/en_AU.UTF-8
@@ -3105,14 +3105,14 @@ NA
 ##  [5] rprojroot_2.0.2    tools_4.1.0        backports_1.2.1    bslib_0.2.5.1     
 ##  [9] utf8_1.2.1         R6_2.5.0           DBI_1.1.1          colorspace_2.0-2  
 ## [13] withr_2.4.2        tidyselect_1.1.1   gridExtra_2.3      extrafontdb_1.0   
-## [17] curl_4.3.2         compiler_4.1.0     textshaping_0.3.5  cli_3.0.0         
+## [17] curl_4.3.2         compiler_4.1.0     textshaping_0.3.5  cli_3.0.0.9000    
 ## [21] rvest_1.0.0        xml2_1.3.2         desc_1.3.0         labeling_0.4.2    
-## [25] sass_0.4.0         scales_1.1.1       pkgdown_1.6.1      systemfonts_1.0.2 
+## [25] sass_0.4.0.9000    scales_1.1.1       pkgdown_1.6.1      systemfonts_1.0.2 
 ## [29] digest_0.6.27      foreign_0.8-81     svglite_2.0.0      rmarkdown_2.9     
 ## [33] rio_0.5.27         pkgconfig_2.0.3    htmltools_0.5.1.1  highr_0.9         
 ## [37] dbplyr_2.1.1       fastmap_1.1.0      rlang_0.4.11       rstudioapi_0.13   
 ## [41] farver_2.1.0       jquerylib_0.1.4    generics_0.1.0     jsonlite_1.7.2    
-## [45] zip_2.2.0          car_3.0-11         magrittr_2.0.1     Rcpp_1.0.6        
+## [45] zip_2.2.0          car_3.0-11         magrittr_2.0.1     Rcpp_1.0.7        
 ## [49] munsell_0.5.0      fansi_0.5.0        abind_1.4-5        lifecycle_1.0.0   
 ## [53] stringi_1.6.2      yaml_2.2.1         carData_3.0-4      plyr_1.8.6        
 ## [57] grid_4.1.0         crayon_1.4.1       haven_2.4.1        hms_1.1.0         
