@@ -140,6 +140,11 @@ dat <- read_csv(system.file(
       Date_time %within% event_data[6, "exposed"] |
       Date_time %within% event_data[7, "exposed"]
   ) %>%
+  mutate(
+    `AVERAGE Wind Speed km/h` = if_else(`TOTAL Rain Gauge mm` > 0,
+                                        `AVERAGE Wind Speed km/h`,
+                                        NA_real_)
+  ) %>% 
   group_by(rainfall_event) %>%
   summarise(
     wind_direction = round(circular.averaging(`AVERAGE Wind Direction Degs`), 1),
@@ -147,7 +152,9 @@ dat <- read_csv(system.file(
     rain_duration = round(sum(rain_duration / 6), 1),
     temp = round(mean(`AVERAGE Air Temperature DegC`), 1),
     relative_humidity = round(mean(`AVERAGE Relative Humidity %`), 1),
-    wind_speed = round(mean(`AVERAGE Wind Speed km/h`) * 0.277778, 1) # convert to m/s
+    wind_speed = round(
+      mean(`AVERAGE Wind Speed km/h`, na.rm = TRUE) * 0.277778,
+      1) # convert to m/s
   ) %>%
   left_join(lesion_data, by = "rainfall_event") %>%
   mutate(
@@ -211,8 +218,8 @@ dat %>%
   ) +
   scale_x_continuous(breaks = seq(from = 0, to = 14, by = 1),
                      limits = c(0, 14)) +
-  scale_y_continuous(breaks = seq(from = 2, to = 5, by = 0.25),
-                     limits = c(2.75, 4.75)) +
+  scale_y_continuous(breaks = seq(from = 2, to = 5.5, by = 0.5),
+                     limits = c(2.5, 5.5)) +
   labs(y = "Wind speed (m/s)",
        x = "Total rainfall (mm)") +
   theme(legend.key = element_blank(),
