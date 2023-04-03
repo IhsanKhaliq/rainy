@@ -14,7 +14,7 @@ This analysis is packaged and fully reproducible. All data from this work are in
 Code used for importing data, data munging, visualisation and model fitting are available to run in R Markdown vignettes, including extra instruction for which we did not have space in the paper. The vignettes can also be accessed under the "Articles" menu item of the [web page](https://ihsankhaliq.github.io/rainy/). 
 The archived code and data is available at https://doi.org/10.5281/zenodo.5077955
 
-
+The published paper is available from the European Journal of Plant Pathology: <https://doi.org/10.1007/s10658-022-02538-2>.
 
 
 
